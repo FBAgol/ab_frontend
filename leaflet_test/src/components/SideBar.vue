@@ -1,8 +1,9 @@
-<template>
+<template> 
+  <scale-card
+  >
   <form @submit.prevent>
     <label for="name">Name:</label>
     <input v-model="name" type="text" id="name" name="name" placeholder="Dein Name" required />
-
     <label for="firmenname">Firmenname:</label>
     <input
       v-model="firmenname"
@@ -12,7 +13,6 @@
       placeholder="Firmenname"
       required
     />
-
     <label for="projektname">Projektname:</label>
     <input
       v-model="projektname"
@@ -22,7 +22,6 @@
       placeholder="Projektname"
       required
     />
-
     <label for="excel">Datei hochladen (CSV, XLS, XLSX):</label>
     <input
       id="excel"
@@ -31,9 +30,10 @@
       accept=".xls,.xlsx,.csv"
       @change="handleFileChange"
     />
-
     <button type="button" @click="submitForm">Absenden</button>
   </form>
+  </scale-card
+>
 </template>
 
 <script setup lang="ts">
@@ -128,15 +128,9 @@ const submitForm = () => {
 </script>
 
 <style scoped>
-form {
+scale-card{
   max-width: 500px;
   margin: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(10.5px);
-  -webkit-backdrop-filter: blur(10.5px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 label {

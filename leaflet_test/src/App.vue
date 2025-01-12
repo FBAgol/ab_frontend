@@ -10,27 +10,20 @@
     >
       <scale-telekom-nav-list slot="main-nav" aria-label="Main Navigation Links">
         <RouterLink to="/">Leaflet</RouterLink>
+        <RouterLink to="/registerationUser">Registeration</RouterLink>
       </scale-telekom-nav-list>
     </scale-telekom-header>
   </header>
 
-  <div class="side_content">
-    <div style="width: 25%">
-      <sidebar></sidebar>
-    </div>
-    <div style="width: 75%">
-      <RouterView></RouterView>
-    </div>
-  </div>
+  <body class="body_content">
+    <RouterView></RouterView>
+  </body>
 </template>
 
 <script setup lang="ts">
-import sidebar from './components/SideBar.vue'
+import { RouterLink } from 'vue-router';
 </script>
 
 <style scoped>
-.side_content {
-  display: flex;
-  flex-direction: row;
-}
+
 </style>

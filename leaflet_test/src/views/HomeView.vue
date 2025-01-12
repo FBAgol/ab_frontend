@@ -1,20 +1,23 @@
 <template>
-  <div>
-    <div id="map" style="height: 90vh; margin-top: 10px"></div>
-    <div v-if="openCamera" class="camera-modal">
-      <video ref="videoStream" autoplay></video>
-      <button @click="takePhoto">Foto aufnehmen</button>
-      <button @click="closeCamera">Abbrechen</button>
+  <body class="body_content">
+    <div style="width: 25%">
+      <sidebar></sidebar>
     </div>
-  </div>
-
-  <div style="display: flex; flex-direction: column;">
-
-  </div>
+    <div style="width: 75%">
+      <div id="map" style="height: 90vh; margin-top: 10px"></div>
+      <div v-if="openCamera" class="camera-modal">
+        <video ref="videoStream" autoplay></video>
+        <button @click="takePhoto">Foto aufnehmen</button>
+        <button @click="closeCamera">Abbrechen</button>
+      </div>
+    </div>
+    
+  </body>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import sidebar from '../components/SideBar.vue'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
 import { mainStore } from '@/stores/store'
@@ -39,10 +42,7 @@ onMounted(() => {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(initialMap.value)
-
-
 })
-
 
 const checkDeviceType = () => {
   isMobileDevice.value = window.innerWidth <= 768
@@ -51,7 +51,6 @@ const checkDeviceType = () => {
 const createMarkers = () => {
   markers.value.forEach((marker) => initialMap.value?.removeLayer(marker as unknown as L.Layer))
   markers.value = []
-
 
   transformedData.value.forEach((cord, index) => {
     const marker = L.marker([cord.latlong[0], cord.latlong[1]])
@@ -67,11 +66,7 @@ const createMarkers = () => {
   }
 }
 
-watch(
-  transformedData,
-  createMarkers,
-  { immediate: true },
-)
+watch(transformedData, createMarkers, { immediate: true })
 
 const getPopupContent = (index: number): string => {
   const uploadButton = `<button id="upload${index}Photo" style="background:none; border:none;">
@@ -91,7 +86,7 @@ const getPopupContent = (index: number): string => {
     <p>Straße: ${transformedData.value[index].street}</p>
     <p>Location: ${transformedData.value[index].locationname}</p>
     <p>Bedard Materail: 1.2.2.2.</p>
-</div>`;
+</div>`
 
   return `
     <div>
@@ -224,10 +219,11 @@ const closeCamera = () => {
 }
 </script>
 
-
-
-
 <style scoped>
+.body_content {
+  display: flex;
+  flex-direction: row;
+}
 .camera-modal {
   position: fixed;
   top: 0;
