@@ -1,4 +1,5 @@
 <template>
+
   <body class="body_content">
     <div style="width: 25%">
       <sidebar></sidebar>
@@ -11,7 +12,7 @@
         <button @click="closeCamera">Abbrechen</button>
       </div>
     </div>
-    
+
   </body>
 </template>
 
@@ -224,6 +225,7 @@ const closeCamera = () => {
   display: flex;
   flex-direction: row;
 }
+
 .camera-modal {
   position: fixed;
   top: 0;
