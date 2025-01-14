@@ -28,7 +28,7 @@ const inputComponyName = ref<string>('')
 const fileContent = ref<File | null>(null)
 
 const projectInfo = ref<ProjectInfo>({
-  superadmin_token: '',
+  token: '',
   company_name: '',
   TelEditor_email: '',
   TelEditor_secret_key: '',
@@ -49,7 +49,7 @@ async function lastPage() {
 
 async function createProject(value: File) {
   fileContent.value = value // Hochgeladene Datei setzen
-  projectInfo.value.superadmin_token = store.tocken
+  projectInfo.value.token = store.tocken
   projectInfo.value.company_name = inputComponyName.value
   projectInfo.value.TelEditor_email = inputTelEditorEmail.value
   projectInfo.value.TelEditor_secret_key = inputTelSecretKey.value
@@ -62,7 +62,7 @@ async function createProject(value: File) {
   formData.append('file', fileContent.value as File) // Datei anhängen
 
   try {
-    const response = await fetch('/define_projects', {
+    const response = await fetch('http://localhost:8000/api/v1/superadmin/define_projects', {
       method: 'POST',
       body: formData, // FormData senden
     })

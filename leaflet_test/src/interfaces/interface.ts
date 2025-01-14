@@ -6,7 +6,7 @@ interface Login {
 
 
 interface ProjectInfo{
-    superadmin_token: string;
+    token: string;
     company_name: string;
     TelEditor_email: string;
     TelEditor_secret_key: string;
