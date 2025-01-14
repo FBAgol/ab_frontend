@@ -35,7 +35,7 @@ const emits = defineEmits(['backToLastPage', 'exelFile'])
   
     const formData = new FormData()
     formData.append('file', inputFile.value)
-    return emits('exelFile', formData)
+    return emits('exelFile', inputFile.value) // Nur die Datei wird zurückgegeben
   
   }
 
@@ -45,5 +45,7 @@ const emits = defineEmits(['backToLastPage', 'exelFile'])
     return emits('backToLastPage', backToLastPage.value)
     
   }
+
+
   </script>
   

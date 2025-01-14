@@ -16,6 +16,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { Login } from '../interfaces/interface'
+import { mainStore } from '@/stores/tockenStorage'
+
+const store = mainStore()
 
 // Input-Felder
 const inputEmail = ref('')
@@ -66,8 +69,11 @@ async function submitForm() {
     }
 
     const data = await response.json()
-    console.log('user:',  loginUser.value.role)
-    console.log('Erfolg:',  data)
+
+    //console.log('tocken:',  data["access_token"])
+    //console.log('refresch tocken:',  data["refresh_token"])
+    store.tocken= data["access_token"]
+    store.refreshToken= data["refresh_token"]
 
   } catch (error) {
     console.error(error)

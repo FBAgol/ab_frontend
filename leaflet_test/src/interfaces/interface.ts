@@ -17,4 +17,22 @@ interface ProjectInfo{
 
 }
 
-export type { Login, ProjectInfo };
+
+interface editorResiteration{
+    secret_key: string;
+    email: string;
+    password: string;
+    role: number;
+
+}
+
+interface superadminRegistration{
+    email: string;
+    password: string;
+    role: number;
+
+}
+
+
+
+export type { Login, ProjectInfo, editorResiteration, superadminRegistration };

@@ -10,19 +10,14 @@
         </scale-card>
  
     <UploadExel @backToLastPage="lastPage" @exelFile="createProject($event)" :class="{hidden: !nextPageShow, show: nextPageShow}"></UploadExel>
-    <div>
-        <p>{{ inputProjectName }}</p>
-        <p>{{ inputTelEditorEmail }}</p>
-        <p>{{ inputTelSecretKey }}</p>
-        <p>{{ inputComEditorEmail }}</p>
-        <p>{{ inputComSecretKey }}</p>
-        <p>{{ inputComponyName }}</p>
-    </div>
 </template>
 <script setup lang="ts">
 import { ref } from 'vue'
 import UploadExel from '../../components/superadmin-components/UploadExel.vue'
-import type {ProjectInfo} from '../../interfaces/interface'
+import type { ProjectInfo } from '../../interfaces/interface'
+import { mainStore } from '@/stores/tockenStorage'
+
+const store = mainStore()
 
 const inputProjectName = ref<string>('')
 const inputTelEditorEmail = ref<string>('')
@@ -30,39 +25,58 @@ const inputTelSecretKey = ref<string>('')
 const inputComEditorEmail = ref<string>('')
 const inputComSecretKey = ref<string>('')
 const inputComponyName = ref<string>('')
-const fileContent = ref(null)
+const fileContent = ref<File | null>(null)
+
 const projectInfo = ref<ProjectInfo>({
-    superadmin_token: '',
-    company_name: '',
-    TelEditor_email: '',
-    TelEditor_secret_key: '',
-    Com_Editor_email: '',
-    Com_Editor_secret_key: '',
-    project_name: ''})
+  superadmin_token: '',
+  company_name: '',
+  TelEditor_email: '',
+  TelEditor_secret_key: '',
+  Com_Editor_email: '',
+  Com_Editor_secret_key: '',
+  project_name: ''
+})
 
-
-const nextPageShow= ref<boolean>(false)
+const nextPageShow = ref<boolean>(false)
 
 async function nextPage() {
-    nextPageShow.value = true
+  nextPageShow.value = true
 }
 
 async function lastPage() {
-    nextPageShow.value = false
+  nextPageShow.value = false
 }
 
-async function createProject(value: any) {
-    fileContent.value = value
-    projectInfo.value.superadmin_token =""
-    projectInfo.value.company_name = inputComponyName.value
-    projectInfo.value.TelEditor_email = inputTelEditorEmail.value
-    projectInfo.value.TelEditor_secret_key = inputTelSecretKey.value
-    projectInfo.value.Com_Editor_email = inputComEditorEmail.value
-    projectInfo.value.Com_Editor_secret_key = inputComSecretKey.value
-    projectInfo.value.project_name = inputProjectName.value
-    
-    
-    
+async function createProject(value: File) {
+  fileContent.value = value // Hochgeladene Datei setzen
+  projectInfo.value.superadmin_token = store.tocken
+  projectInfo.value.company_name = inputComponyName.value
+  projectInfo.value.TelEditor_email = inputTelEditorEmail.value
+  projectInfo.value.TelEditor_secret_key = inputTelSecretKey.value
+  projectInfo.value.Com_Editor_email = inputComEditorEmail.value
+  projectInfo.value.Com_Editor_secret_key = inputComSecretKey.value
+  projectInfo.value.project_name = inputProjectName.value
+
+  const formData = new FormData()
+  formData.append('editors', JSON.stringify(projectInfo.value)) // JSON-Daten anhängen
+  formData.append('file', fileContent.value as File) // Datei anhängen
+
+  try {
+    const response = await fetch('/define_projects', {
+      method: 'POST',
+      body: formData, // FormData senden
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(`Error: ${response.status} - ${errorData.detail}`)
+    }
+
+    const result = await response.json()
+    console.log('Erfolg:', result)
+  } catch (error) {
+    console.error('Fehler beim Erstellen des Projekts:', error)
+  }
 }
 </script>
 
