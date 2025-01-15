@@ -1,11 +1,16 @@
 <template>
   <div>
     <scale-card target="_blank" rel="noopener noreferrer" label="Example Card">
-      <scale-text-field label="Email" v-model="inputEmail"></scale-text-field>
-      <scale-text-field label="Geheimschluessel" v-model="inputSecretKey" :disabled="parseInt(selectedValue) === 0"></scale-text-field>
-      <scale-text-field label="Password" v-model="inputPassword"></scale-text-field>
-      <scale-text-field label="Password woiederholen" v-model="inputPasswordRepeat"></scale-text-field>
-      <scale-dropdown-select label="Rolle" @scale-change="handleSelectionChange">
+      <scale-text-field label="Email" v-model="inputEmail" :helper-text="warningEmail ? 'Email Feld ist leer' : ''"
+      :invalid="warningEmail"></scale-text-field>
+      <scale-text-field label="Geheimschluessel" v-model="inputSecretKey" :disabled="parseInt(selectedValue) === 0" :helper-text="warningSecretKey ? 'Gehimschlussel Feld ist leer' : ''"
+      :invalid="warningSecretKey"></scale-text-field>
+      <scale-text-field label="Password" v-model="inputPassword" :helper-text="warningPassword ? 'Password Feld ist leer' : ''"
+      :invalid="warningPassword"></scale-text-field>
+      <scale-text-field label="Password woiederholen" v-model="inputPasswordRepeat" :helper-text="warningPasswordRepeat ? 'Feld ist leer' : ''"
+      :invalid="warningPasswordRepeat"></scale-text-field>
+      <scale-dropdown-select label="Rolle" @scale-change="handleSelectionChange" :helper-text="warningRolle ? 'Wählen Sie bitte Ihre Rolle aus' : ''"
+      :invalid="warningRolle">
         <scale-dropdown-select-item value="0">Super Admin</scale-dropdown-select-item>
         <scale-dropdown-select-item value="2">Telekom Editor</scale-dropdown-select-item>
         <scale-dropdown-select-item value="1">Company Editor</scale-dropdown-select-item>
@@ -29,7 +34,13 @@ const inputPassword = ref('')
 const inputPasswordRepeat = ref('')
 const selectedValue = ref<string>('');
 const url = ref<string>('')
-const registerType = ref<number>()
+
+
+const warningEmail= ref<boolean>(false)
+const warningPassword= ref<boolean>(false)
+const warningRolle= ref<boolean>(false)
+const warningPasswordRepeat= ref<boolean>(false)
+const warningSecretKey= ref<boolean>(false)
 
 const handleSelectionChange = (event: Event) => {
   const target = event.target as HTMLSelectElement;
@@ -37,6 +48,17 @@ const handleSelectionChange = (event: Event) => {
 }
 async function submitForm() {
   try {
+    warningEmail.value = !inputEmail.value;
+    warningPassword.value = !inputPassword.value;
+    warningRolle.value = !selectedValue.value;
+    warningPasswordRepeat.value = !inputPasswordRepeat.value;
+    warningSecretKey.value = !inputSecretKey.value && parseInt(selectedValue.value) !== 0;
+    warningRolle.value = !selectedValue.value;
+
+    if (warningEmail.value || warningPassword.value || warningRolle.value || warningPasswordRepeat.value || warningSecretKey.value) {
+      return;
+    }
+
     // Überprüfe, ob die Passwörter übereinstimmen
     if (inputPassword.value !== inputPasswordRepeat.value) {
       // Return der Fehlermeldung, wenn Passwörter nicht übereinstimmen
@@ -46,13 +68,10 @@ async function submitForm() {
     // Festlegung der URL basierend auf der Rolle
     if (parseInt(selectedValue.value) === 0) {
       url.value = "http://localhost:8000/api/v1/superadmin/registeration";
-      registerType.value = 0;
     } else if (parseInt(selectedValue.value) === 2) {
       url.value = "http://localhost:8000/api/v1/telekomeditor/registeration";
-      registerType.value = 2;
     } else if (parseInt(selectedValue.value) === 1) {
       url.value = "http://localhost:8000/api/v1/companyeditor/registeration";
-      registerType.value = 1;
     }
 
     // Sende die Anfrage basierend auf der Rolle
@@ -74,6 +93,18 @@ async function submitForm() {
       throw new Error('Fehler beim Login.');
     }
 
+    let registerNumberType= -1
+
+    if(parseInt(selectedValue.value) === 0){
+      registerNumberType= 0}
+    else if(parseInt(selectedValue.value) === 1){
+      registerNumberType= 1
+    }
+    else if(parseInt(selectedValue.value) === 2){
+      registerNumberType= 2
+    }
+
+
     // Verarbeite die Antwort
     const data = await request.json();
     console.log(data);
@@ -83,7 +114,7 @@ async function submitForm() {
       store.tocken = data["access_token"];
       store.refreshToken = data["refresh_token"];
     }
-    return emits("registerNumber", registerType.value);
+    return emits("registerNumber", registerNumberType);
 
   } catch (error:any) {
     // Fange alle Fehler ab und gebe den Fehlertext zurück
