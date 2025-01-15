@@ -14,11 +14,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref} from 'vue'
 import type { Login } from '../interfaces/interface'
-import { mainStore } from '@/stores/tockenStorage'
+import { tokenStore } from '@/stores/tockenStorage'
+import { companyeditorStore } from '@/stores/companyEditorStore'
 
-const store = mainStore()
+const tStore = tokenStore()
+const ceditorstore= companyeditorStore() 
+const emits= defineEmits(["loginNumber"])
 
 // Input-Felder
 const inputEmail = ref('')
@@ -44,17 +47,21 @@ async function submitForm() {
   loginUser.value.email = inputEmail.value
   loginUser.value.password = inputPassword.value
   loginUser.value.role = parseInt(selectedValue.value!)
+  const loginNumberType = ref<number>()
 
   try {
     const url = ref<string>('')
     if (loginUser.value.role === 0) {
       url.value = "http://localhost:8000/api/v1/superadmin/login"
+      loginNumberType.value = 0
     }
     else if (loginUser.value.role === 1) {
       url.value = "http://localhost:8000/api/v1/companyeditor/login"
+      loginNumberType.value = 1
     }
     else if (loginUser.value.role === 2) {
       url.value = "http://localhost:8000/api/v1/telekomeditor/login"
+      loginNumberType.value = 2
     }
 
     const response = await fetch(url.value, {
@@ -72,8 +79,15 @@ async function submitForm() {
 
     //console.log('tocken:',  data["access_token"])
     //console.log('refresch tocken:',  data["refresh_token"])
-    store.tocken= data["access_token"]
-    store.refreshToken= data["refresh_token"]
+    //console.log('number:',  loginNumberType.value)
+    tStore.tocken= data["access_token"]
+    tStore.refreshToken= data["refresh_token"]
+    if(data["projects"] && data["company_name"]){
+      ceditorstore.projects= data["projects"]
+      ceditorstore.companyName= data["company_name"]
+      ceditorstore.editorEmail= inputEmail.value
+    }
+    return emits("loginNumber", loginNumberType.value)
 
   } catch (error) {
     console.error(error)

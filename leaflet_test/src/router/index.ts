@@ -1,19 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+
 import RegisterationUser from '@/views/RegisterationUser.vue'
 import LoginUser from '@/views/LoginUser.vue'
 import CreateProjects from '@/views/superadmin_routers/CreateProjects.vue'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
-    },
-    {
-      path: '/registerationUser',
       name: 'registerationUser',
       component: RegisterationUser,
     },
@@ -26,6 +23,11 @@ const router = createRouter({
       path: '/createProjects',
       name: 'createProjects',
       component: CreateProjects,
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: HomeView,
     }
   ],
 })

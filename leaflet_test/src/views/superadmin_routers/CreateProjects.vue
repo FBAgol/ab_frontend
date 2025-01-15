@@ -15,9 +15,9 @@
 import { ref } from 'vue'
 import UploadExel from '../../components/superadmin-components/UploadExel.vue'
 import type { ProjectInfo } from '../../interfaces/interface'
-import { mainStore } from '@/stores/tockenStorage'
+import { tokenStore } from '@/stores/tockenStorage'
 
-const store = mainStore()
+const store = tokenStore()
 
 const inputProjectName = ref<string>('')
 const inputTelEditorEmail = ref<string>('')

@@ -1,9 +1,9 @@
-import { ref, watch } from 'vue'
+import { ref} from 'vue'
 import { defineStore } from 'pinia'
 
 
 
-export const mainStore = defineStore('store', () => {
+export const tokenStore = defineStore('store', () => {
 
     const tocken = ref<string>('')
     const refreshToken = ref<string >('')
