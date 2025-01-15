@@ -1,12 +1,12 @@
 <template>
   <div>
     <scale-card target="_blank" rel="noopener noreferrer" label="Example Card">
-      <scale-text-field class="childCard" label="Email" v-model="inputEmail" :helper-text="warningEmail ? 'Email Feld ist leer' : ''"
-      :invalid="warningEmail"></scale-text-field>
-      <scale-text-field label="Password" class="childCard" v-model="inputPassword" :helper-text="warningPassword ? 'Password Feld ist leer' : ''"
-      :invalid="warningPassword"></scale-text-field>
-      <scale-dropdown-select label="Rolle" class="childCard" @scale-change="handleSelectionChange" :helper-text="warningRolle ? 'Wählen Sie bitte Ihre Rolle aus' : ''"
-      :invalid="warningRolle">
+      <scale-text-field class="childCard" label="Email" v-model="inputEmail"
+        :helper-text="warningEmail ? 'Email Feld ist leer' : ''" :invalid="warningEmail"></scale-text-field>
+      <scale-text-field label="Password" class="childCard" v-model="inputPassword"
+        :helper-text="warningPassword ? 'Password Feld ist leer' : ''" :invalid="warningPassword"></scale-text-field>
+      <scale-dropdown-select label="Rolle" class="childCard" @scale-change="handleSelectionChange"
+        :helper-text="warningRolle ? 'Wählen Sie bitte Ihre Rolle aus' : ''" :invalid="warningRolle">
         <scale-dropdown-select-item value="0">Super Admin</scale-dropdown-select-item>
         <scale-dropdown-select-item value="1">Company Editor</scale-dropdown-select-item>
         <scale-dropdown-select-item value="2">Telekom Editor</scale-dropdown-select-item>
@@ -14,17 +14,19 @@
       </scale-dropdown-select>
       <scale-button @click="submitForm">Anmelden</scale-button>
     </scale-card>
+
+    <scale-notification :heading="invalidError ? 'Email oder Password ist invalid' : ''" :variant="invalidError ?  'danger' : ''" opened></scale-notification>
   </div>
 </template>
 <script setup lang="ts">
-import { ref} from 'vue'
+import { ref } from 'vue'
 import type { Login } from '../interfaces/interface'
 import { tokenStore } from '@/stores/tockenStorage'
 import { companyeditorStore } from '@/stores/companyEditorStore'
 
 const tStore = tokenStore()
-const ceditorstore= companyeditorStore() 
-const emits= defineEmits(["loginNumber"])
+const ceditorstore = companyeditorStore()
+const emits = defineEmits(["loginNumber"])
 
 const inputEmail = ref('')
 const inputPassword = ref('')
@@ -35,13 +37,15 @@ const loginUser = ref<Login>({
   role: ''
 })
 
-const warningEmail= ref<boolean>(false)
-const warningPassword= ref<boolean>(false)
-const warningRolle= ref<boolean>(false)
+const warningEmail = ref<boolean>(false)
+const warningPassword = ref<boolean>(false)
+const warningRolle = ref<boolean>(false)
+
+const invalidError = ref<boolean>(false)
 
 const handleSelectionChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
-  selectedValue.value = target.value 
+  selectedValue.value = target.value
 }
 
 async function submitForm() {
@@ -79,6 +83,7 @@ async function submitForm() {
     });
 
     if (!response.ok) {
+      invalidError.value = true;
       throw new Error('Fehler beim Login.');
     }
 
