@@ -18,3 +18,5 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+
+router.replace('/') // Immer auf die Registrierungsseite umleiten
