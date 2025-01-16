@@ -4,7 +4,8 @@ import { tokenStore } from '@/stores/tockenStorage'
 import RegisterationUser from '@/views/RegisterationUser.vue'
 import LoginUser from '@/views/LoginUser.vue'
 import CreateProjects from '@/views/superadmin_routers/CreateProjects.vue'
-import HomeView from '../views/HomeView.vue'
+import LeafletMap from '../views/companyEditor_routers/LeafletMap.vue'
+import GetProjects from '@/views/telekomeditor_routers/GetProjects.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,9 +27,14 @@ const router = createRouter({
       meta: { requiresAuth: true } // Diese Route erfordert Authentifizierung
     },
     {
-      path: '/home',
-      name: 'home',
-      component: HomeView,
+      path: '/leafletMap',
+      name: 'leafletMap',
+      component: LeafletMap,
+    },
+    {
+      path: '/getProjects',
+      name: 'getProjects',
+      component: GetProjects,
     }
   ],
 })

@@ -19,4 +19,4 @@ app.use(createPinia())
 app.use(router)
 app.mount('#app')
 
-router.replace('/') // Immer auf die Registrierungsseite umleiten
+router.replace('/') // Immer auf die Registrierungsseite umleiten nach der Refresh-Seite

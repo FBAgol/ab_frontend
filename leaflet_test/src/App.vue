@@ -13,12 +13,16 @@
         <RouterLink to="/loginUser" >Login</RouterLink>
       </scale-telekom-nav-item>
 
-      <scale-telekom-nav-item aria-label="home" :hidden="!companyeditorShow">
-        <RouterLink to="/home">Leaflet</RouterLink>
+      <scale-telekom-nav-item aria-label="leafletMap" :hidden="!companyeditorShow">
+        <RouterLink to="/leafletMap">Leaflet</RouterLink>
       </scale-telekom-nav-item>
 
       <scale-telekom-nav-item aria-label="CreateProject" :hidden="!superadminShow">
         <RouterLink to="/createProjects">Projekte anlegen</RouterLink>
+      </scale-telekom-nav-item>
+
+      <scale-telekom-nav-item aria-label="getProjects" :hidden="!telekomeditorShow">
+        <RouterLink to="/getProjects">Projekte</RouterLink>
       </scale-telekom-nav-item>
       <!-- … -->
     </scale-telekom-nav-list>
@@ -48,11 +52,11 @@ function userType(value: number) {
   } else if (value === 1) {
     console.log("company editor", value)
     companyeditorShow.value = true
-    router.push('/home').catch(err => console.error(err)) // Fängt mögliche Fehler ab
+    router.push('/leafletMap').catch(err => console.error(err)) // Fängt mögliche Fehler ab
   } else if (value === 2) {
     console.log("telekom editor", value)
     telekomeditorShow.value = true
-    router.push('/home').catch(err => console.error(err)) // Fängt mögliche Fehler ab
+    router.push('/getProjects').catch(err => console.error(err)) // Fängt mögliche Fehler ab
   }
 }
 

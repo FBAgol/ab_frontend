@@ -18,7 +18,7 @@
 
   <script setup lang="ts">
   import { ref, onMounted, watch, toRaw } from 'vue'
-  import sidebar from '../components/SideBar.vue'
+  import sidebar from '../../components/SideBar.vue'
   import 'leaflet/dist/leaflet.css'
   import * as L from 'leaflet'
   import { mainStore } from '@/stores/store'
@@ -63,17 +63,17 @@
     isMobileDevice.value = window.innerWidth <= 768
   }
 
-  const createMarkers = (data:any) => {
+  const createMarkers = (data:{[key:string]:any}) => {
     
     Object.values(markers.value).forEach((marker) => initialMap.value?.removeLayer(marker as unknown as L.Layer))
     markers.value = {}
 
-    projectInfo.value["streets"].forEach((street:any) => {
-      street["coordinates_ZoneId"].forEach((s:any)=>{
+    projectInfo.value["streets"].forEach((street: {[key:string]:any}) => {
+      street["coordinates_ZoneId"].forEach((s:{[key:string]:any})=>{
        // console.log('type:', typeof parseFloat(s["longitude"]))
         const marker = L.marker([parseFloat(s["latitude"]), parseFloat(s["longitude"])])
         .addTo(initialMap.value!)
-        .bindPopup(getPopupContent(s["zone_id"]), { maxWidth: undefined })
+        .bindPopup(getPopupContent(s["zone_id"], street["street_name"], s["target_material"]), { maxWidth: undefined })
         .on('popupopen', () => setupPopupEvents(s["zone_id"]))
       markers.value[s["zone_id"]] = marker
 
@@ -98,55 +98,62 @@
     createMarkers(newData)
   })
 
-  const getPopupContent = (zoneId: string ): string => {
-    const uploadButton = `<button id="upload${zoneId}Photo" style="background:none; border:none;">
-        <img src="../../public/upload-bold-arrow-icon.svg" alt="upload" height="20" width="20">
-      </button>
+  const getPopupContent = (zoneId: string, street?:string, target_material?:string | null ): string => {
+    const pcCamera = `<scale-icon-device-photo-camera accessibility-title="photo-camera" id="upload${zoneId}Photo" style="cursor:pointer;" />
       `
 
-    const cameraButton = isMobileDevice.value
-      ? `<button id="open${zoneId}Camera" style="background:none; border:none;">
-          <img src="../../public/vecteezy_camera-icon-simple-design-in-white-background_18932615.svg" alt="camera" height="25" width="25">
-        </button>`
+    const phoneCamera = isMobileDevice.value
+      ?
+        `<scale-icon-device-device-phone accessibility-title="device-phone" id="open${zoneId}Camera" style="cursor:pointer;" />`
       : ''
     const infoMarker = `
   <div style="display: flex; flex-direction: column; align-items: flex-start;">
       <p>FID: ${zoneId}</p>
       <p>Stadt: ${projectInfo.value["city"]}</p>
-      <p>Straße: </p>
+      <p>Straße: ${street} </p>
       <p>Location:</p>
-      <p>Bedard Materail: 1.2.2.2.</p>
+      <p>Bedard Materail: ${target_material}</p>
   </div>`
 
     return `
       <div>
-        ${uploadButton}
-        ${cameraButton}
+        ${pcCamera}
+        ${phoneCamera}
       </div>
       ${infoMarker}
     `
   }
 
   const setupPopupEvents = (zoneId: string) => {
-    const uploadButton = document.getElementById(`upload${zoneId}Photo`)
-    const cameraButton = document.getElementById(`open${zoneId}Camera`)
-    const deleteButton = document.getElementById(`delete${zoneId}Photo`)
+  const pcCamera = document.getElementById(`upload${zoneId}Photo`);
+  const phoneCamera = document.getElementById(`open${zoneId}Camera`);
+  const deleteButton = document.getElementById(`delete${zoneId}Photo`);
 
-    // Event-Listener für Upload-Button
-    if (uploadButton) {
-      uploadButton.addEventListener('click', () => handlePhotoUpload(zoneId))
-    }
-
-    // Event-Listener für Kamera-Button
-    if (cameraButton) {
-      cameraButton.addEventListener('click', () => openCameraHandler(zoneId))
-    }
-
-    // Event-Listener für Lösch-Button (wird nach Foto-Upload hinzugefügt)
-    if (deleteButton) {
-      deleteButton.addEventListener('click', () => removeImage(zoneId))
-    }
+  // Event-Listener für Upload-Button (nur Datei-Upload öffnen)
+  if (pcCamera) {
+    pcCamera.addEventListener('click', (event) => {
+      event.stopPropagation(); // Verhindert unerwünschte Propagation
+      handlePhotoUpload(zoneId);
+    });
   }
+
+  // Event-Listener für Kamera-Button (nur Kamera öffnen)
+  if (phoneCamera) {
+    phoneCamera.addEventListener('click', (event) => {
+      event.stopPropagation(); // Verhindert unerwünschte Propagation
+      openCameraHandler(zoneId);
+    });
+  }
+
+  // Event-Listener für Lösch-Button (nur Bild löschen)
+  if (deleteButton) {
+    deleteButton.addEventListener('click', (event) => {
+      event.stopPropagation(); // Verhindert unerwünschte Propagation
+      removeImage(zoneId);
+    });
+  }
+};
+
 
   const openCameraHandler = (zoneId: string) => {
     currentMarkerIndex.value = zoneId
@@ -206,37 +213,89 @@
   }
 
   const updateMarkerPopup = (zoneId: string, image: string) => {
+    // Hole die zugehörigen Straßeninformationen
+    const zone_info: { target_material?: string [] } = {}
+    const street = projectInfo.value["streets"].find((street: { [key: string]: any }) =>{
+      street["coordinates_ZoneId"].some((s: { [key: string]: any }) => s["zone_id"] === zoneId)
+      street["coordinates_ZoneId"].forEach((s: { [key: string]: any }) => {
+        if (s["zone_id"] === zoneId) {
+          zone_info["target_material"] = s["target_material"]
+
+        }
+      })
+    }
+      
+    );
+
     const content = `
       <div>
         <img src="${image}" alt="Bild" style="width:100%; height:auto;">
-        <button id="delete${zoneId}Photo" style="display:block; margin-top:10px;">Bild löschen</button>
+        <scale-button id="delete${zoneId}Photo" style=" margin-top:10px;" >Bild Löschen</scale-button>
       </div>
       <div style="display: flex; flex-direction: column; align-items: flex-start;">
-      <p>FID: ${zoneId}</p>
-      <p>Stadt: ${projectInfo.value["city"]}</p>
-      <p>Straße: </p>
-      <p>Location: </p>
-      <p>Bedarf Materail: 1.2.2.2.</p>
-  </div>
+        <p>FID: ${zoneId}</p>
+        <p>Stadt: ${projectInfo.value["city"]}</p>
+        <p>Straße: ${street ? street["street_name"] : 'Unbekannt'}</p>
+        <p>Location: </p>
+        <p>Bedarf Material: ${zone_info["target_material"]}</p>
+      </div>
+    `;
 
-    `
-
-    const marker = markers.value[zoneId]
-    marker.setPopupContent(content).openPopup()
+    const marker = markers.value[zoneId];
+    marker.setPopupContent(content).openPopup();
 
     // Event-Listener für den Delete-Button setzen
-    setupPopupEvents(zoneId)
-  }
+    setupPopupEvents(zoneId);
+}
 
-  const removeImage = (zoneId: string) => {
-    // Entfernen des Bildes und des Delete-Buttons
-    const marker = markers.value[zoneId]
-    marker.setPopupContent(getPopupContent(zoneId)) // Reset des Popups auf den ursprünglichen Inhalt
-    marker.openPopup()
+const removeImage = (zoneId: string) => {
+  const marker = markers.value[zoneId];
 
-    // Alle Events werden beim Reset ebenfalls zurückgesetzt
-    setupPopupEvents(zoneId)
+  if (!marker) return;
+
+  // Hole den aktuellen Popup-Inhalt
+  const popupContent = marker.getPopup()?.getContent();
+
+  if (typeof popupContent === 'string') {
+    // Entferne nur das Bild und den Delete-Button aus dem HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(popupContent, 'text/html');
+
+    // Entferne das Bild und den Delete-Button
+    const img = doc.querySelector('img');
+    const deleteButton = doc.querySelector(`#delete${zoneId}Photo`);
+    if (img) img.remove();
+    if (deleteButton) deleteButton.remove();
+
+    // Ergänze die ursprünglichen Kamera- und Upload-Icons
+    const pcCamera = `
+      <scale-icon-device-photo-camera accessibility-title="photo-camera" id="upload${zoneId}Photo" style="cursor:pointer; " />
+    `;
+    const phoneCamera = isMobileDevice.value
+      ? `<scale-icon-device-device-phone accessibility-title="device-phone" id="open${zoneId}Camera" style="cursor:pointer; " />`
+      : '';
+    const updatedIcons = `
+      <div>
+        ${pcCamera}
+        ${phoneCamera}
+      </div>
+    `;
+
+    // Füge die ursprünglichen Icons wieder hinzu
+    const infoSection = doc.body.querySelector('div');
+    if (infoSection) {
+      infoSection.insertAdjacentHTML('afterbegin', updatedIcons);
+    }
+
+    // Aktualisiere den Marker mit dem geänderten Inhalt
+    const newContent = doc.body.innerHTML;
+    marker.setPopupContent(newContent).openPopup();
+
+    // Setze die Events erneut, um sicherzustellen, dass die Buttons und Icons funktionieren
+    setupPopupEvents(zoneId);
   }
+};
+
 
   const closeCamera = () => {
     openCamera.value = false
