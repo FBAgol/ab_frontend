@@ -46,7 +46,7 @@ async function getProjectContent() {
   }
 
   const data = await response.json();
-  //console.log('projects:', data);
+  console.log('projects:', data);
   return emits("projectData", data)
 
 }

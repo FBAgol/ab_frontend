@@ -43,8 +43,8 @@
 
   watch(projectInfo, (newData) => {
     const data = JSON.parse(JSON.stringify(newData))
-    console.log('newData:', newData)
-    console.log('streets:', newData["streets"])
+    //console.log('newData:', newData)
+    //console.log('streets:', newData["streets"])
     d.value= newData["streets"]
   })
 
@@ -83,7 +83,7 @@
 
     Object.values(markers.value).forEach(marker => {
   const latLng = marker.getLatLng();
-  console.log('Marker Koordinaten:', latLng);
+ // console.log('Marker Koordinaten:', latLng);
 });
 
 
@@ -213,40 +213,46 @@
   }
 
   const updateMarkerPopup = (zoneId: string, image: string) => {
-    // Hole die zugehörigen Straßeninformationen
-    const zone_info: { target_material?: string [] } = {}
-    const street = projectInfo.value["streets"].find((street: { [key: string]: any }) =>{
-      street["coordinates_ZoneId"].some((s: { [key: string]: any }) => s["zone_id"] === zoneId)
-      street["coordinates_ZoneId"].forEach((s: { [key: string]: any }) => {
-        if (s["zone_id"] === zoneId) {
-          zone_info["target_material"] = s["target_material"]
+  // Hole die zugehörigen Straßeninformationen
+  const zone_info: { target_material?: string[] } = {};
+  const street = projectInfo.value["streets"].find((street: { [key: string]: any }) => {
+    return street["coordinates_ZoneId"].some((s: { [key: string]: any }) => s["zone_id"] === zoneId);
+  });
 
-        }
-      })
-    }
-      
-    );
+  if (street) {
+    street["coordinates_ZoneId"].forEach((s: { [key: string]: any }) => {
+      if (s["zone_id"] === zoneId) {
+        zone_info["target_material"] = s["target_material"];
+      }
+    });
+  }
 
-    const content = `
-      <div>
-        <img src="${image}" alt="Bild" style="width:100%; height:auto;">
-        <scale-button id="delete${zoneId}Photo" style=" margin-top:10px;" >Bild Löschen</scale-button>
-      </div>
-      <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        <p>FID: ${zoneId}</p>
-        <p>Stadt: ${projectInfo.value["city"]}</p>
-        <p>Straße: ${street ? street["street_name"] : 'Unbekannt'}</p>
-        <p>Location: </p>
-        <p>Bedarf Material: ${zone_info["target_material"]}</p>
-      </div>
-    `;
+  // Erstelle den neuen Popup-Inhalt mit Bild und ursprünglichen Informationen
+  const content = `
+    <div>
+      <img src="${image}" alt="Bild" style="width:100%; height:auto;">
+      <scale-button id="delete${zoneId}Photo" style="margin-top:10px;">Bild Löschen</scale-button>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+      <p>FID: ${zoneId}</p>
+      <p>Stadt: ${projectInfo.value["city"]}</p>
+      <p>Straße: ${street ? street["street_name"] : 'Unbekannt'}</p>
+      <p>Location: </p>
+      <p>Bedarf Material: ${zone_info["target_material"]}</p>
+    </div>
+  `;
 
-    const marker = markers.value[zoneId];
+  // Aktualisiere den Popup-Inhalt des Markers
+  const marker = markers.value[zoneId];
+  if (marker) {
     marker.setPopupContent(content).openPopup();
+  }
 
-    // Event-Listener für den Delete-Button setzen
-    setupPopupEvents(zoneId);
-}
+  // Setze die Events erneut, um sicherzustellen, dass die Buttons und Icons funktionieren
+  setupPopupEvents(zoneId);
+};
+
+
 
 const removeImage = (zoneId: string) => {
   const marker = markers.value[zoneId];

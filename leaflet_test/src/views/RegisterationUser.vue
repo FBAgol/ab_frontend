@@ -28,10 +28,10 @@ const store = tokenStore()
 const emits= defineEmits(["registerNumber"])
 
 
-const inputEmail = ref('')
-const inputSecretKey = ref('')
-const inputPassword = ref('')
-const inputPasswordRepeat = ref('')
+const inputEmail = ref<string>('')
+const inputSecretKey = ref<string>('')
+const inputPassword = ref<string>('')
+const inputPasswordRepeat = ref<string>('')
 const selectedValue = ref<string>('');
 const url = ref<string>('')
 
@@ -76,7 +76,7 @@ async function submitForm() {
     // URL basierend auf der Rolle festlegen
     if (parseInt(selectedValue.value) === 0) {
       url.value = "http://localhost:8000/api/v1/superadmin/registration";
-    } else if (parseInt(selectedValue.value) === 2) {
+    } else if (parseInt(selectedValue.value) === 2) { 
       url.value = "http://localhost:8000/api/v1/telekomeditor/registration";
     } else if (parseInt(selectedValue.value) === 1) {
       url.value = "http://localhost:8000/api/v1/companyeditor/registration";
@@ -89,10 +89,10 @@ async function submitForm() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        secret_key: inputSecretKey.value,
         email: inputEmail.value,
         password: inputPassword.value,
-        role: parseInt(selectedValue.value),
-        secret_key: inputSecretKey.value, // Nur bei Bedarf
+        role: parseInt(selectedValue.value)
       }),
     });
 
