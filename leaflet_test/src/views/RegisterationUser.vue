@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="registeration-body">
     <scale-card target="_blank" rel="noopener noreferrer" label="Example Card">
       <scale-text-field label="Email" v-model="inputEmail" :helper-text=" warningEmail ? 'Email Feld ist leer' :  (invalidEmail ? 'Invalid Email': '')" 
       :invalid="warningEmail || invalidEmail"></scale-text-field>
@@ -15,6 +15,7 @@
         <scale-dropdown-select-item value="2">Telekom Editor</scale-dropdown-select-item>
         <scale-dropdown-select-item value="1">Company Editor</scale-dropdown-select-item>
       </scale-dropdown-select>
+    
       <scale-button @click="submitForm">Registerieren</scale-button>
     </scale-card>
   </div>
@@ -128,9 +129,31 @@ async function submitForm() {
 
 </script>
 <style scoped>
+.registeration-body{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+}
 scale-card::part(base) {
   width: 500px;
-  height: 400px;
+  min-height: 342px;
   border-radius: 5px;
 }
+
+scale-card :deep(.text-field){
+  margin: 5px;
+}
+
+scale-card ::part(combobox) {
+  margin: 5px;
+  width: 442px;
+}
+
+scale-card ::part(base variant-primary before){
+  margin: 0 5px 5px 5px;
+
+}
+
+
 </style>

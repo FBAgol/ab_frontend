@@ -100,6 +100,7 @@ watch(projectInfo, (newData) => {
 })
 
 const getPopupContent = (zoneId: string, street?: string, target_material?: string | null): string => {
+
   const pcCamera = `<scale-icon-device-photo-camera accessibility-title="photo-camera" id="upload${zoneId}Photo" style="cursor:pointer;" />
       `
 
@@ -223,6 +224,7 @@ const handlePhotoUpload = (zoneId: string) => {
 
 async function saveImage(zoneId: string) {
   const imgElement = document.getElementById(`uploaded${zoneId}`) as HTMLImageElement;
+  const saveButton = document.getElementById(`save${zoneId}`) as HTMLButtonElement;
   if (!imgElement) {
     console.error("Kein Bild gefunden.");
     return;
@@ -279,11 +281,63 @@ async function saveImage(zoneId: string) {
     const result = await response.json();
     console.log("Bild erfolgreich gespeichert:", result);
 
-    // Bild im Popup aktualisieren, aber das Originalbild beibehalten
-    updateMarkerPopup(zoneId, result.analysed_image_url, true); // "true" sorgt dafür, dass das Bild im Popup unverändert bleibt
+    // Aktualisiere den Marker-Popup mit den neuen URLs
+    // Aber behalte das ursprüngliche Bild, ohne den src-Wert zu ändern
+    
+    updateMarkerPopup(zoneId, result.analysed_image_url);
+
+    setTimeout(() => {
+      hideScaleButtonBase(`save${zoneId}`);
+}, 50);
+    
   } catch (error) {
     console.error("Fehler beim Speichern des Bildes:", error);
     alert("Bild konnte nicht gespeichert werden.");
+  }
+}
+
+function hideScaleButtonBase(scaleButtonId: string) {
+  // Suche das Scale-Button-Element anhand der ID
+  const scaleButton = document.getElementById(scaleButtonId) as HTMLElement;
+
+  if (!scaleButton) {
+    console.error(`Kein Scale-Button mit der ID ${scaleButtonId} gefunden.`);
+    return;
+  }
+
+  // Überprüfen, ob das Element ein Shadow DOM hat
+  if (scaleButton.shadowRoot) {
+    // Rekursive Funktion, um den gesamten Shadow DOM-Baum zu durchsuchen
+    function findButtonInShadow(root: ShadowRoot | HTMLElement): HTMLElement | null {
+      // Suche nach dem Button innerhalb des Shadow DOM
+      const button = root.querySelector('button[part="base variant-primary before"]');
+      if (button) {
+        return button as HTMLElement;
+      }
+
+      // Falls wir noch nicht fündig geworden sind, überprüfen wir, ob es noch verschachtelte Shadow Roots gibt
+      const shadowHosts = root.querySelectorAll<HTMLElement>('[shadowroot]');
+      for (let shadowHost of shadowHosts) {
+        if (shadowHost.shadowRoot) {
+          const foundButton = findButtonInShadow(shadowHost.shadowRoot);
+          if (foundButton) return foundButton;
+        }
+      }
+
+      return null;
+    }
+
+    // Versuche, den Button im Shadow DOM zu finden
+    const baseButton = findButtonInShadow(scaleButton.shadowRoot);
+    if (baseButton) {
+      // Wende den Style an, um das Element auszublenden
+      baseButton.style.display = 'none';
+      console.log('Das Button-Element mit part="base variant-primary before" wurde ausgeblendet.');
+    } else {
+      console.error('Kein Button-Element mit part="base variant-primary before" im Shadow DOM gefunden.');
+    }
+  } else {
+    console.error(`Das Element ${scaleButtonId} hat kein Shadow DOM.`);
   }
 }
 
@@ -291,8 +345,7 @@ async function saveImage(zoneId: string) {
 
 
 
-
-const updateMarkerPopup = (zoneId: string, image: string, keepOriginalImage: boolean = false) => {
+const updateMarkerPopup = (zoneId: string, image: string) => {
   // Hole die zugehörigen Straßeninformationen
   const zone_info: { target_material?: string[] } = {};
   const street = projectInfo.value["streets"].find((street: { [key: string]: any }) => {
@@ -307,13 +360,10 @@ const updateMarkerPopup = (zoneId: string, image: string, keepOriginalImage: boo
     });
   }
 
-  // Entscheide, ob das Bild behalten oder aktualisiert werden soll
-  const imageUrl = keepOriginalImage ? image : image; // Hier könnte deine Logik geändert werden
-
   // Erstelle den neuen Popup-Inhalt mit Bild und ursprünglichen Informationen
   const content = `
     <div>
-      <img src="${imageUrl}" id="uploaded${zoneId}" alt="Bild" style="width:100%; height:auto;">
+      <img src="${image}" id="uploaded${zoneId}" alt="Bild" style="width:100%; height:auto;">
       <scale-button id="delete${zoneId}Photo" style="margin-top:10px;">Bild Löschen</scale-button>
       <scale-button id="save${zoneId}" style="margin-top:10px;">Speichern</scale-button>
     </div>
@@ -338,7 +388,6 @@ const updateMarkerPopup = (zoneId: string, image: string, keepOriginalImage: boo
 
 
 
-
 const removeImage = (zoneId: string) => {
   const marker = markers.value[zoneId];
 
@@ -355,8 +404,10 @@ const removeImage = (zoneId: string) => {
     // Entferne das Bild und den Delete-Button
     const img = doc.querySelector('img');
     const deleteButton = doc.querySelector(`#delete${zoneId}Photo`);
+    const saveButton = doc.querySelector(`#save${zoneId}`);
     if (img) img.remove();
     if (deleteButton) deleteButton.remove();
+    if (saveButton) saveButton.remove();
 
     // Ergänze die ursprünglichen Kamera- und Upload-Icons
     const pcCamera = `
@@ -437,5 +488,13 @@ const closeCamera = () => {
 
 .camera-modal button:hover {
   background-color: #0056b3;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.show {
+  display: block;
 }
 </style>

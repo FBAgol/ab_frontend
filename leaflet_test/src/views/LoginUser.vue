@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="loginbody">
     <scale-card target="_blank" rel="noopener noreferrer" label="Example Card">
       <scale-text-field class="childCard" label="Email" v-model="inputEmail"
         :helper-text="warningEmail ? 'Email Feld ist leer' : ''" :invalid="warningEmail"></scale-text-field>
@@ -10,7 +10,6 @@
         <scale-dropdown-select-item value="0">Super Admin</scale-dropdown-select-item>
         <scale-dropdown-select-item value="1">Company Editor</scale-dropdown-select-item>
         <scale-dropdown-select-item value="2">Telekom Editor</scale-dropdown-select-item>
-
       </scale-dropdown-select>
       <scale-button @click="submitForm">Anmelden</scale-button>
     </scale-card>
@@ -121,9 +120,29 @@ async function submitForm() {
 </script>
 
 <style scoped>
+.loginbody {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
 scale-card::part(base) {
   width: 500px;
-  height: 400px;
+  min-height: 342px;
   border-radius: 5px;
 }
+
+scale-card :deep(.text-field){
+  margin: 5px;
+}
+
+scale-card ::part(combobox) {
+  margin: 5px;
+  width: 442px;
+}
+
+scale-card ::part(base variant-primary before){
+  margin: 0 5px 5px 5px;
+
+}
+
 </style>

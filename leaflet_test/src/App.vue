@@ -1,15 +1,18 @@
 <template>
+  <div>
+    
+  </div>
   <scale-telekom-header app-name="Bauarbeiter" meta-nav-aria-label="Meta navigation section"
     meta-nav-external-aria-label="External navigation section" lang-switcher-aria-label="Language switcher section"
     main-nav-aria-label="Main navigation section">
     <scale-telekom-nav-list slot="main-nav" aria-label="Main Navigation Links">
-      <scale-telekom-nav-item aria-label="Registeration" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
-        <scale-icon-home-home accessibility-title="home"/>
+      <scale-telekom-nav-item aria-label="Registeration" :hidden="companyeditorShow || telekomeditorShow || superadminShow" class="inlineItems">
+        <scale-icon-home-home accessibility-title="registration"/>
         <RouterLink to="/" >Registeration</RouterLink>
       </scale-telekom-nav-item>
 
-      <scale-telekom-nav-item aria-label="Login" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
-        <scale-icon-user-file-bussines-users accessibility-title="bussines-users"/>
+      <scale-telekom-nav-item class="inlineItems"aria-label="Login" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
+        <scale-icon-user-file-bussines-users accessibility-title="login"/>
         <RouterLink to="/loginUser" >Login</RouterLink>
       </scale-telekom-nav-item>
 
@@ -28,7 +31,7 @@
     </scale-telekom-nav-list>
   </scale-telekom-header>
 
-  <body class="body_content">
+  <body>
     <RouterView @loginNumber="userType($event)" @registerNumber="userType($event)"></RouterView>
   </body>
 </template>
@@ -64,6 +67,11 @@ function userType(value: number) {
 </script>
 
 <style scoped>
+
+.inlineItems{
+  display: inline-flex;
+
+}
 .hidden {
   display: none;
 }
