@@ -1,5 +1,5 @@
 <template>
-  <div class="loginbody">
+  <div class="loginBody">
     <scale-card target="_blank" rel="noopener noreferrer" label="Example Card">
       <scale-text-field class="childCard" label="Email" v-model="inputEmail"
         :helper-text="warningEmail ? 'Email Feld ist leer' : ''" :invalid="warningEmail"></scale-text-field>
@@ -13,8 +13,7 @@
       </scale-dropdown-select>
       <scale-button @click="submitForm">Anmelden</scale-button>
     </scale-card>
-
-    <scale-notification :heading="invalidError ? 'Email oder Password ist invalid' : ''" :variant="invalidError ?  'danger' : ''" opened></scale-notification>
+    <scale-notification  :heading="invalidError ? 'Email oder Password ist invalid' : ''" :variant="invalidError ?  'danger' : ''" opened></scale-notification>
   </div>
 </template>
 <script setup lang="ts">
@@ -120,15 +119,22 @@ async function submitForm() {
 </script>
 
 <style scoped>
-.loginbody {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+body {
+  background-color: black;
+}
+.loginBody{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 450px;
+
 }
 scale-card::part(base) {
   width: 500px;
-  min-height: 342px;
+  min-height: 188px;
   border-radius: 5px;
+  overflow: visible;/* Erlaubt das Anzeigen der Dropdown-Optionen außerhalb des Containers */
 }
 
 scale-card :deep(.text-field){
@@ -144,5 +150,12 @@ scale-card ::part(base variant-primary before){
   margin: 0 5px 5px 5px;
 
 }
+
+scale-notification::part(base) {
+  width: 50%;
+  margin-top: 10px;
+}
+
+
 
 </style>

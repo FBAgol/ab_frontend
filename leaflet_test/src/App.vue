@@ -1,19 +1,14 @@
 <template>
-  <div>
-    
-  </div>
   <scale-telekom-header app-name="Bauarbeiter" meta-nav-aria-label="Meta navigation section"
     meta-nav-external-aria-label="External navigation section" lang-switcher-aria-label="Language switcher section"
     main-nav-aria-label="Main navigation section">
     <scale-telekom-nav-list slot="main-nav" aria-label="Main Navigation Links">
-      <scale-telekom-nav-item aria-label="Registeration" :hidden="companyeditorShow || telekomeditorShow || superadminShow" class="inlineItems">
-        <scale-icon-home-home accessibility-title="registration"/>
-        <RouterLink to="/" >Registeration</RouterLink>
+      <scale-telekom-nav-item aria-label="Registeration" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
+        <RouterLink to="/" > <scale-icon-home-home accessibility-title="registration"  size="22" class ="icon"/>Registeration</RouterLink>
       </scale-telekom-nav-item>
 
-      <scale-telekom-nav-item class="inlineItems"aria-label="Login" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
-        <scale-icon-user-file-bussines-users accessibility-title="login"/>
-        <RouterLink to="/loginUser" >Login</RouterLink>
+      <scale-telekom-nav-item aria-label="Login" :hidden="companyeditorShow || telekomeditorShow || superadminShow">
+        <RouterLink to="/loginUser" ><scale-icon-user-file-bussines-users size="22" class ="icon" accessibility-title="login" />Login</RouterLink>
       </scale-telekom-nav-item>
 
       <scale-telekom-nav-item aria-label="leafletMap" :hidden="!companyeditorShow">
@@ -37,32 +32,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RouterLink,useRouter } from 'vue-router'
+import { ref, watch } from 'vue'
+import { RouterLink,useRouter, useRoute } from 'vue-router'
 const registNum = ref<number>()
 const superadminShow = ref<boolean>(false)
 const companyeditorShow = ref<boolean>(false)
 const telekomeditorShow = ref<boolean>(false)
 
-// Zugriff auf den Router
+// Zugriff auf den Router um die Daten auszulesen
 const router = useRouter()
+
+
 function userType(value: number) {
   registNum.value = value
   if (value === 0) {
     console.log("superadmin", value)
     superadminShow.value = true
-    router.push('/createProjects').catch(err => console.error(err)) // Fängt mögliche Fehler ab
+    router.push('/createProjects').catch(err => console.error(err)) 
   } else if (value === 1) {
     console.log("company editor", value)
     companyeditorShow.value = true
-    router.push('/leafletMap').catch(err => console.error(err)) // Fängt mögliche Fehler ab
+    router.push('/leafletMap').catch(err => console.error(err))
   } else if (value === 2) {
     console.log("telekom editor", value)
     telekomeditorShow.value = true
-    router.push('/getProjects').catch(err => console.error(err)) // Fängt mögliche Fehler ab
+    router.push('/getProjects').catch(err => console.error(err))
   }
 }
 
+// damit die Seite nicht scrollt
+const route = useRoute();
+watch(
+  () => route.path,
+  (newPath) => {
+    const noScrollRoutes = ['/', '/loginUser']; // die Seiten die nicht scrollen sollen
+    if (noScrollRoutes.includes(newPath)) {
+      document.body.classList.add('no-scroll');
+    } else {
+      document.body.classList.remove('no-scroll');
+    }
+  },
+  { immediate: true } // Direkt beim Laden ausführen
+);
 
 </script>
 
@@ -72,11 +83,19 @@ function userType(value: number) {
   display: inline-flex;
 
 }
+.icon{
+  margin-right: 7px;
+}
 .hidden {
-  display: none;
+  display: block;
 }
 
 .show {
   visibility: visible;
+}
+
+.no-scroll {
+  overflow: hidden;
+  height: 100%; /* Verhindert auch das Scrollen auf mobilen Geräten */
 }
 </style>

@@ -123,22 +123,26 @@ async function submitForm() {
 }
 
 
-
-
-
-
 </script>
 <style scoped>
 .registeration-body{
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 500px;
   
+}
+
+
+scale-card ::part(base) {
+  display: flex;
+  flex-direction: column;
 }
 scale-card::part(base) {
   width: 500px;
-  min-height: 342px;
+  min-height: 347px;
   border-radius: 5px;
+  overflow: visible;/* Erlaubt das Anzeigen der Dropdown-Optionen außerhalb des Containers */
 }
 
 scale-card :deep(.text-field){
@@ -154,6 +158,13 @@ scale-card ::part(base variant-primary before){
   margin: 0 5px 5px 5px;
 
 }
+.helper-text helper-text--danger{
+  flex-direction: row !important;
+}
 
 
+scale-card[data-v-a55f2463] ::part(base){
+  display: flex;
+  flex-direction: row-reverse !important;
+}
 </style>

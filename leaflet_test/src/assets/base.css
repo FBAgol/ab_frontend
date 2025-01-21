@@ -84,3 +84,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+html.no-scroll,
+body.no-scroll {
+  overflow: hidden;
+  height: 100%; /* Verhindert auch das Scrollen auf mobilen Geräten */
+  position: fixed;
+  width: 100%; /* Sicherstellen, dass es auch in allen Browsern funktioniert */
+  top: 0;
+  left: 0;
+}

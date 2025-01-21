@@ -46,7 +46,7 @@ async function getProjectContent() {
   }
 
   const data = await response.json();
- // console.log('projects:', data);
+  console.log('projects:', data);
   return emits("projectData", data)
 
 }
@@ -56,35 +56,23 @@ async function getProjectContent() {
 </script>
 
 <style scoped>
-scale-card {
-  max-width: 500px;
-  margin: 10px;
+
+scale-card::part(base) {
+  border-radius: 5px;
+  overflow: visible;/* Erlaubt das Anzeigen der Dropdown-Optionen außerhalb des Containers */
 }
 
-label {
-  display: block;
-  margin: 10px 0 5px;
+scale-card :deep(.text-field){
+  margin: 5px;
 }
 
-input[type='text'],
-input[type='file'] {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+scale-card ::part(combobox) {
+  margin: 5px;
+  width: 352px;
+}
+scale-card ::part(base variant-primary before){
+  margin: 0 5px 5px 5px;
+
 }
 
-button {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #45a049;
-}
 </style>

@@ -1,10 +1,9 @@
   <template>
-
     <body class="body_content">
-      <div style="width: 25%">
+      <div style="width: 25%; margin: 8.5px 10px 0 0;">
         <sidebar @projectData="getData($event)"></sidebar>
       </div>
-      <div style="width: 75%">
+      <div style="width: 75%; border-radius: 5px;">
         <div id="map" style="height: 90vh; margin-top: 10px"></div>
         <div v-if="openCamera" class="camera-modal">
           <video ref="videoStream" autoplay></video>
@@ -58,7 +57,10 @@ onMounted(() => {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(initialMap.value)
+
 })
+
+
 
 const checkDeviceType = () => {
   isMobileDevice.value = window.innerWidth <= 768
@@ -496,5 +498,8 @@ const closeCamera = () => {
 
 .show {
   display: block;
+}
+.no-scroll {
+  overflow: hidden;
 }
 </style>
