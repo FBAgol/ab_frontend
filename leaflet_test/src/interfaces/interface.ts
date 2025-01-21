@@ -34,8 +34,6 @@ interface superadminRegistration{
 }
 
 interface updateImg{
-    lat: number;        
-    long: number;
     oldOrginalImgUrl: string;
     oldAnalysedImgUrl: string;
 }

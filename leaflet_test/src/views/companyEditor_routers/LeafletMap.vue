@@ -37,8 +37,6 @@ const d = ref<any>()
 
 const projectInfo = ref<any>()
 const updateImage= ref<updateImg>({
-  lat: 0,
-  long: 0,
   oldOrginalImgUrl:'',
   oldAnalysedImgUrl:''
 })
@@ -78,17 +76,20 @@ const createMarkers = (data: { [key: string]: any }) => {
   projectInfo.value['streets'].forEach((street: { [key: string]: any }) => {
     street['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
       if (s['original_image_url']) {
-        updateImage.value.lat = s['latitude']
-        updateImage.value.long = s['longitude']
         updateImage.value.oldAnalysedImgUrl = s['analysed_image_url']
         updateImage.value.oldOrginalImgUrl = s['original_image_url']
-
       }
+      const zoneId = s['zone_id'] ? String(s['zone_id']) : 'Unbekannte Zone';
       // console.log('type:', typeof parseFloat(s["longitude"]))
       const marker = L.marker([parseFloat(s['latitude']), parseFloat(s['longitude'])])
         .addTo(initialMap.value!)
         .bindPopup(getPopupContent(s['zone_id'], street['street_name'], s['target_material'], s["original_image_url"]), {
           maxWidth: undefined,
+        })
+        .bindTooltip(zoneId, {
+          permanent: true, // Tooltip bleibt dauerhaft sichtbar
+          direction: 'top', // Position des Tooltips relativ zum Marker
+          offset: [0, -10], // Offset für die Position des Tooltips
         })
         .on('popupopen', () => setupPopupEvents(s['zone_id'], updateImage.value))
       markers.value[s['zone_id']] = marker
@@ -153,23 +154,23 @@ const getPopupContent = (
 }
 
 const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
-  const pcCamera = document.getElementById(`upload${zoneId}Photo`)
-  const phoneCamera = document.getElementById(`open${zoneId}Camera`)
+  const pcCameraIcon = document.getElementById(`upload${zoneId}Photo`)
+  const phoneCameraIcon = document.getElementById(`open${zoneId}Camera`)
   const deleteButton = document.getElementById(`delete${zoneId}Photo`)
   const saveImgButton = document.getElementById(`save${zoneId}`)
   const updateImgButton = document.getElementById(`updateImg${zoneId}`)
 
   // Event-Listener für Upload-Button (nur Datei-Upload öffnen)
-  if (pcCamera) {
-    pcCamera.addEventListener('click', (event) => {
+  if (pcCameraIcon) {
+    pcCameraIcon.addEventListener('click', (event) => {
       event.stopPropagation() // Verhindert unerwünschte Propagation
       handlePhotoUpload(zoneId)
     })
   }
 
   // Event-Listener für Kamera-Button (nur Kamera öffnen)
-  if (phoneCamera) {
-    phoneCamera.addEventListener('click', (event) => {
+  if (phoneCameraIcon) {
+    phoneCameraIcon.addEventListener('click', (event) => {
       event.stopPropagation() // Verhindert unerwünschte Propagation
       openCameraHandler(zoneId)
     })
@@ -198,27 +199,31 @@ const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
   }
 }
 
-const updateImgHandler= async (zone_id:string,imgInfo: updateImg ) => {
-  document.querySelector('.avaolableImgBox')?.remove()
-  console.log('zooonnnnee:', zone_id)
-  getPopupContent(zone_id)
-
+const updateImgHandler = async (zoneId: string, imgInfo: updateImg) => {
+  document.querySelector('.avaolableImgBox')?.remove(); // Entfernt das alte Bild
   
-/*
-  const response = await fetch ('http://localhost:8000/api/v1/companyeditor/update/img_coordinate', {
-    method: 'POST',
+  // Lösche das Bild in der Datenbank
+  await fetch('http://localhost:8000/api/v1/companyeditor/update/img_coordinate', {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token.tocken
+      Authorization: token.tocken,
     },
     body: JSON.stringify({
-      lat: imgInfo.lat,
-      long: imgInfo.long,
-      oldOrginalImgUrl: imgInfo.oldOrginalImgUrl,
-      oldAnalysedImgUrl: imgInfo.oldAnalysedImgUrl
-    })
-  })*/
-}
+      oldOriginalImgUrl: imgInfo.oldOrginalImgUrl,
+      oldAnalyzedImgUrl: imgInfo.oldAnalysedImgUrl,
+    }),
+  });
+
+  // Aktualisiere den Popup-Inhalt mit `getPopupContent`
+  const marker = markers.value[zoneId];
+  if (marker) {
+    const updatedContent = getPopupContent(zoneId); // Generiere neuen Popup-Inhalt
+    marker.setPopupContent(updatedContent).openPopup(); // Setze neuen Inhalt und öffne das Popup
+    setupPopupEvents(zoneId); // Setze die Events neu, damit Icons wie pcCameraIcon funktionieren
+  }
+};
+
 const openCameraHandler = (zoneId: string) => {
   currentMarkerIndex.value = zoneId
   openCamera.value = true
@@ -276,47 +281,84 @@ const handlePhotoUpload = (zoneId: string) => {
   input.click()
 }
 
-async function saveImage(zoneId: string) {
-  const imgElement = document.getElementById(`uploaded${zoneId}`) as HTMLImageElement
-
-  if (!imgElement) {
-    console.error('Kein Bild gefunden.')
-    return
-  }
-
-  const zone_info: { lat?: number; long?: number } = {}
-  const street = projectInfo.value['streets'].find((street: { [key: string]: any }) =>
-    street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId),
-  )
+const updateMarkerPopupAfterSave = (zoneId: string, analysedImageUrl: string, originalImageUrl: string) => {
+  const zone_info: { target_material?: string[] } = {};
+  const street = projectInfo.value['streets'].find((street: { [key: string]: any }) => {
+    return street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId);
+  });
 
   if (street) {
     street['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
       if (s['zone_id'] === zoneId) {
-        zone_info['lat'] = s['latitude']
-        zone_info['long'] = s['longitude']
+        zone_info['target_material'] = s['target_material'];
       }
-    })
+    });
+  }
+
+  // Popup-Inhalt mit neuem Bild und Update-Schaltfläche
+  const content = `
+    <div class="avaolableImgBox">
+      <img src="http://localhost:8000/${analysedImageUrl}" id="availableImg${zoneId}" alt="Bild" style="width:100%; height:auto;">
+      <scale-button id="updateImg${zoneId}" style="margin-top:10px;">Update</scale-button>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+      <p>FID: ${zoneId}</p>
+      <p>Stadt: ${projectInfo.value['city']}</p>
+      <p>Straße: ${street ? street['street_name'] : 'Unbekannt'}</p>
+      <p>Location: </p>
+      <p>Bedarf Material: ${zone_info['target_material']}</p>
+    </div>
+  `;
+
+  const marker = markers.value[zoneId];
+  if (marker) {
+    marker.setPopupContent(content).openPopup();
+    setupPopupEvents(zoneId, { oldOrginalImgUrl: originalImageUrl, oldAnalysedImgUrl: analysedImageUrl });
+  }
+};
+
+
+async function saveImage(zoneId: string) {
+  const imgElement = document.getElementById(`uploaded${zoneId}`) as HTMLImageElement;
+
+  if (!imgElement) {
+    console.error('Kein Bild gefunden.');
+    return;
+  }
+
+  const zone_info: { lat?: number; long?: number } = {};
+  const street = projectInfo.value['streets'].find((street: { [key: string]: any }) =>
+    street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId),
+  );
+
+  if (street) {
+    street['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
+      if (s['zone_id'] === zoneId) {
+        zone_info['lat'] = s['latitude'];
+        zone_info['long'] = s['longitude'];
+      }
+    });
   }
 
   // Hole die Base64-Daten aus dem Bild
-  const base64Data = imgElement.src
+  const base64Data = imgElement.src;
 
   // Konvertiere Base64 zu einer Datei
-  const blob = await fetch(base64Data).then((res) => res.blob())
-  const file = new File([blob], `${zoneId}.png`, { type: 'image/png' })
+  const blob = await fetch(base64Data).then((res) => res.blob());
+  const file = new File([blob], `${zoneId}.png`, { type: 'image/png' });
 
   // Erstelle FormData für den API-Aufruf
-  const formData = new FormData()
+  const formData = new FormData();
 
   // Füge das JSON-String-Format von `upload_img_request` hinzu
   const uploadImgRequest = {
     lat: zone_info.lat,
     long: zone_info.long,
-  }
-  formData.append('upload_img_request', JSON.stringify(uploadImgRequest))
+  };
+  formData.append('upload_img_request', JSON.stringify(uploadImgRequest));
 
   // Füge die Datei hinzu
-  formData.append('file', file)
+  formData.append('file', file);
 
   try {
     const response = await fetch('http://localhost:8000/api/v1/companyeditor/upload/img', {
@@ -325,26 +367,25 @@ async function saveImage(zoneId: string) {
         Authorization: `Bearer ${token.tocken}`,
       },
       body: formData,
-    })
+    });
 
     if (!response.ok) {
-      const errorDetails = await response.json()
-      throw new Error(`Fehler beim Speichern: ${errorDetails.detail}`)
+      const errorDetails = await response.json();
+      throw new Error(`Fehler beim Speichern: ${errorDetails.detail}`);
     }
 
-    const result = await response.json()
-    console.log('Bild erfolgreich gespeichert:', result)
+    const result = await response.json();
 
-    updateMarkerPopup(zoneId, result.analysed_image_url)
+    // Aktualisiere den Marker-Popup-Inhalt mit der Bild-URL und füge die Update-Schaltfläche hinzu
+    updateMarkerPopupAfterSave(zoneId, result.analysed_image_url, result.original_image_url);
 
-    setTimeout(() => {
-      hideScaleButtonBase(`save${zoneId}`)
-    }, 50)
+    console.log('Bild erfolgreich gespeichert:', result);
   } catch (error) {
-    console.error('Fehler beim Speichern des Bildes:', error)
-    alert('Bild konnte nicht gespeichert werden.')
+    console.error('Fehler beim Speichern des Bildes:', error);
+    alert('Bild konnte nicht gespeichert werden.');
   }
 }
+
 
 function hideScaleButtonBase(scaleButtonId: string) {
   // Suche das Scale-Button-Element anhand der ID
