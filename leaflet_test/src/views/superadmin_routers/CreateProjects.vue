@@ -116,6 +116,14 @@ async function createProject(value: File) {
 
     const result = await response.json()
     console.log('Erfolg:', result)
+    lastPage()
+    inputProjectName.value = ''
+    inputTelEditorEmail.value = ''
+    inputTelSecretKey.value = ''
+    inputComEditorEmail.value = ''
+    inputComSecretKey.value = ''
+    inputComponyName.value = ''
+    fileContent.value = null
   } catch (error) {
     console.error('Fehler beim Erstellen des Projekts:', error)
   }

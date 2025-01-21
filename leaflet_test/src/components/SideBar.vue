@@ -2,8 +2,8 @@
   <scale-card>
       <scale-text-field label="Name" :value="ceditorstore.editorEmail" readonly></scale-text-field>
       <scale-text-field label="Unternehmen" :value="ceditorstore.companyName" readonly></scale-text-field>
-      <scale-dropdown-select label="Projects" v-for="(project, index) in ceditorstore.projects" :key="index" @scale-change="handleSelectionChange">
-        <scale-dropdown-select-item :value="project">{{ project }}</scale-dropdown-select-item>
+      <scale-dropdown-select label="Projects" @scale-change="handleSelectionChange">
+        <scale-dropdown-select-item  v-for="(project, index) in ceditorstore.projects" :key="index" :value="project">{{ project }}</scale-dropdown-select-item>
       </scale-dropdown-select>
       <scale-button @click="getProjectContent">Projekt</scale-button>
 

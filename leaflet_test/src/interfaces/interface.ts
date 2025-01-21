@@ -33,6 +33,12 @@ interface superadminRegistration{
 
 }
 
+interface updateImg{
+    lat: number;        
+    long: number;
+    oldOrginalImgUrl: string;
+    oldAnalysedImgUrl: string;
+}
 
 
-export type { Login, ProjectInfo, editorResiteration, superadminRegistration };
+export type { Login, ProjectInfo, editorResiteration, superadminRegistration, updateImg };

@@ -98,7 +98,7 @@ async function submitForm() {
     }
 
     const data = await response.json();
-    //console.log('Data:', data);
+    console.log('Data:', data);
 
     tStore.tocken = data["access_token"];
     tStore.refreshToken = data["refresh_token"];
