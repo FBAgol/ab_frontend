@@ -2,7 +2,8 @@
   <scale-card>
       <scale-text-field label="Name" :value="ceditorstore.editorEmail" readonly></scale-text-field>
       <scale-text-field label="Unternehmen" :value="ceditorstore.companyName" readonly></scale-text-field>
-      <scale-dropdown-select label="Projects" @scale-change="handleSelectionChange">
+      <scale-dropdown-select label="Projects" @scale-change="handleSelectionChange" :invalid="warningEmpty"
+      :helper-text="warningEmpty? 'Projekt auswählen' : ''">
         <scale-dropdown-select-item  v-for="(project, index) in ceditorstore.projects" :key="index" :value="project">{{ project }}</scale-dropdown-select-item>
       </scale-dropdown-select>
       <scale-button @click="getProjectContent">Projekt</scale-button>
@@ -21,6 +22,7 @@ const tStore = tokenStore()
 const ceditorstore = companyeditorStore()
 
 const selectedValue = ref<string | null>(null)
+const warningEmpty= ref<boolean>(false)
 const emits= defineEmits(["projectData"])
 
 const handleSelectionChange = (event: Event) => {
@@ -29,6 +31,10 @@ const handleSelectionChange = (event: Event) => {
 }
 
 async function getProjectContent() {
+  if (!selectedValue.value) {
+    warningEmpty.value = true
+    return
+  }
   const url = `http://localhost:8000/api/v1/companyeditor/projectname/${selectedValue.value}`;
   
   const response = await fetch(url, {
