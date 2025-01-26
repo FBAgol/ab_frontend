@@ -6,6 +6,7 @@ import LoginUser from '@/views/LoginUser.vue'
 import CreateProjects from '@/views/superadmin_routers/CreateProjects.vue'
 import LeafletMap from '../views/companyEditor_routers/LeafletMap.vue'
 import GetProjects from '@/views/telekomeditor_routers/GetProjects.vue'
+import NotificationEditor from '@/views/telekomeditor_routers/NotificationEditor.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,11 @@ const router = createRouter({
       path: '/getProjects',
       name: 'getProjects',
       component: GetProjects,
+    },
+    {
+      path: '/notificationEditor',
+      name: 'notificationEditor',
+      component: NotificationEditor,
     }
   ],
 })

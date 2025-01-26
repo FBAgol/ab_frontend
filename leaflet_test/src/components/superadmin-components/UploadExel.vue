@@ -43,7 +43,7 @@ async function lastPage() {
 </script>
 
 <style scoped>
- .buttonBox{
-    margin-left: 1px;
-  }
+.buttonBox {
+  margin-left: 1px;
+}
 </style>

@@ -20,10 +20,13 @@
 import { ref } from 'vue'
 import type { Login } from '../interfaces/interface'
 import { tokenStore } from '@/stores/tockenStorage'
-import { companyeditorStore } from '@/stores/companyEditorStore'
+import { editorStore } from '@/stores/editorStore'
+
+
+//console.log('window.innerWidth:', window.innerWidth)
 
 const tStore = tokenStore()
-const ceditorstore = companyeditorStore()
+const editorstore = editorStore()
 const emits = defineEmits(["loginNumber"])
 
 const inputEmail = ref('')
@@ -98,18 +101,20 @@ async function submitForm() {
     }
 
     const data = await response.json();
-    console.log('Data:', data);
+  console.log('data:', data);
 
     tStore.tocken = data["access_token"];
     tStore.refreshToken = data["refresh_token"];
     if (data["projects"] && data["company_name"]) {
-      ceditorstore.projects = data["projects"];
-      ceditorstore.companyName = data["company_name"];
-      ceditorstore.editorEmail = inputEmail.value;
+      editorstore.projects = data["projects"];
+      editorstore.companyName = data["company_name"];
+      editorstore.companyEditorEmail = inputEmail.value;
     }
 
-    // Emit den Typ, wenn alles erfolgreich ist
-    return emits("loginNumber", loginNumberType);
+    if (loginUser.value.role === '2' &&data) {
+      editorstore.telekomEditorNotifications = data["notifications"];
+    } 
+    emits("loginNumber", loginNumberType)
 
   } catch (error: any) {
     console.error(error.message);

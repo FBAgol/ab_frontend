@@ -22,12 +22,16 @@
       <scale-telekom-nav-item aria-label="getProjects" :hidden="!telekomeditorShow">
         <RouterLink to="/getProjects">Projekte</RouterLink>
       </scale-telekom-nav-item>
+
+      <scale-telekom-nav-item aria-label="notification" :hidden="!telekomeditorShow">
+        <RouterLink to="/notificationEditor">Notification</RouterLink>
+      </scale-telekom-nav-item>
       <!-- … -->
     </scale-telekom-nav-list>
   </scale-telekom-header>
 
   <body>
-    <RouterView @loginNumber="userType($event)" @registerNumber="userType($event)"></RouterView>
+    <RouterView @loginNumber="userType($event)" @registerNumber="userType($event)" ></RouterView>
   </body>
 </template>
 
@@ -38,12 +42,12 @@ const registNum = ref<number>()
 const superadminShow = ref<boolean>(false)
 const companyeditorShow = ref<boolean>(false)
 const telekomeditorShow = ref<boolean>(false)
-
+const notifications = ref<any[]>([]);
 // Zugriff auf den Router um die Daten auszulesen
 const router = useRouter()
 
 
-function userType(value: number) {
+function userType(value: number, data?: any) {
   registNum.value = value
   if (value === 0) {
     console.log("superadmin", value)
@@ -74,6 +78,7 @@ watch(
   },
   { immediate: true } // Direkt beim Laden ausführen
 );
+
 
 </script>
 

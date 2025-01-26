@@ -1,6 +1,6 @@
 <template>
   <scale-card>
-      <scale-text-field label="Name" :value="ceditorstore.editorEmail" readonly></scale-text-field>
+      <scale-text-field label="Name" :value="ceditorstore.companyEditorEmail" readonly></scale-text-field>
       <scale-text-field label="Unternehmen" :value="ceditorstore.companyName" readonly></scale-text-field>
       <scale-dropdown-select label="Projects" @scale-change="handleSelectionChange" :invalid="warningEmpty"
       :helper-text="warningEmpty? 'Projekt auswählen' : ''">
@@ -16,10 +16,10 @@ import { ref } from 'vue'
 //import * as XLSX from 'xlsx'
 //import Papa from 'papaparse'
 import { tokenStore } from '@/stores/tockenStorage'
-import { companyeditorStore } from '@/stores/companyEditorStore'
+import { editorStore } from '@/stores/editorStore'
 
 const tStore = tokenStore()
-const ceditorstore = companyeditorStore()
+const ceditorstore = editorStore()
 
 const selectedValue = ref<string | null>(null)
 const warningEmpty= ref<boolean>(false)
