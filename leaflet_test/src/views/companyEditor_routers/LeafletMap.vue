@@ -73,7 +73,7 @@ const createMarkers = (data: { [key: string]: any }) => {
   )
   markers.value = {}
 
-  projectInfo.value['streets'].forEach((street: { [key: string]: any }) => {
+  data['streets'].forEach((street: { [key: string]: any }) => {
     street['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
       if (s['original_image_url']) {
         updateImage.value.oldAnalysedImgUrl = s['analysed_image_url']
@@ -91,7 +91,15 @@ const createMarkers = (data: { [key: string]: any }) => {
           direction: 'top', // Position des Tooltips relativ zum Marker
           offset: [0, -10], // Offset für die Position des Tooltips
         })
-        .on('popupopen', () => setupPopupEvents(s['zone_id'], updateImage.value))
+        .on('popupopen', () => {// Gib die gespeicherten Informationen des Markers in der Konsole aus
+          console.log('Gespeicherte Informationen:', {
+            zoneId: zoneId,
+            street: street['street_name'],
+            target_material: s['target_material'],
+            original_image_url: s['original_image_url'],
+            analysed_image_url: s['analysed_image_url'],
+          });
+          setupPopupEvents(s['zone_id'], updateImage.value)})
       markers.value[s['zone_id']] = marker
     })
   })
@@ -117,6 +125,7 @@ const getPopupContent = (
   street?: string,
   target_material?: string | null,
   imgPath?: string,
+
 ): string => {
   const availableImg = `<img src="http://localhost:8000/${imgPath}" id="availableImg${zoneId}" alt="Bild" style="width:100%; height:auto;">`
   const pcCamera = `<scale-icon-device-photo-camera accessibility-title="photo-camera" id="upload${zoneId}Photo" style="cursor:pointer;" />
@@ -133,6 +142,7 @@ const getPopupContent = (
       <p>Location:</p>
       <p>Bedard Materail: ${target_material}</p>
   </div>`
+  
 
   if (imgPath) {
     return `
@@ -159,6 +169,7 @@ const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
   const deleteButton = document.getElementById(`delete${zoneId}Photo`)
   const saveImgButton = document.getElementById(`save${zoneId}`)
   const updateImgButton = document.getElementById(`updateImg${zoneId}`)
+  
 
   // Event-Listener für Upload-Button (nur Datei-Upload öffnen)
   if (pcCameraIcon) {
@@ -200,6 +211,7 @@ const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
 }
 
 const updateImgHandler = async (zoneId: string, imgInfo: updateImg) => {
+  console.log('updateImgHandler:', zoneId, imgInfo);
   document.querySelector('.avaolableImgBox')?.remove(); // Entfernt das alte Bild
   
   // Lösche das Bild in der Datenbank
@@ -281,7 +293,9 @@ const handlePhotoUpload = (zoneId: string) => {
   input.click()
 }
 
+
 const updateMarkerPopupAfterSave = (zoneId: string, analysedImageUrl: string, originalImageUrl: string) => {
+  console.log('updateMarkerPopupAfterSave:', zoneId, analysedImageUrl, originalImageUrl);
   const zone_info: { target_material?: string[] } = {};
   const street = projectInfo.value['streets'].find((street: { [key: string]: any }) => {
     return street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId);
@@ -298,7 +312,7 @@ const updateMarkerPopupAfterSave = (zoneId: string, analysedImageUrl: string, or
   // Popup-Inhalt mit neuem Bild und Update-Schaltfläche
   const content = `
     <div class="avaolableImgBox">
-      <img src="http://localhost:8000/${analysedImageUrl}" id="availableImg${zoneId}" alt="Bild" style="width:100%; height:auto;">
+      <img src="http://localhost:8000/${originalImageUrl}" id="availableImg${zoneId}" alt="Bild" style="width:100%; height:auto;">
       <scale-button id="updateImg${zoneId}" style="margin-top:10px;">Update</scale-button>
     </div>
     <div style="display: flex; flex-direction: column; align-items: flex-start;">
