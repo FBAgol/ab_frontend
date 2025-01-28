@@ -7,7 +7,7 @@
       <div v-for="(street, index) in projektInfo['streets']" :key="index">
         <div  v-for="(zone, id) in street['coordinates_ZoneId']" :key="id">
           <scale-card label="" show-sort class="" >
-          <scale-table  v-for="(material , index) in zone['result_materiallist']" :key="index">
+          <scale-table>
             <table  >
               <caption>
                 {{ projektInfo.city }}, {{ street["street_name"] }}, {{ zone['zone_id'] }}
@@ -21,7 +21,7 @@
                   <th tabindex="2" id="wahrscheinlichkeit">Bild</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody  v-for="(material , index) in zone['result_materiallist']" :key="index">
                 <tr>
                   <td>{{ material['object'] }}</td>
                   <td>
@@ -33,8 +33,8 @@
                   </td>
                   <td>
                     <!-- Klickbar p-Tag zum Öffnen des Modals -->
-                    <p class="ulrHover" @click="openModal()">
-                      {{ formatUrlImg() }}
+                    <p class="ulrHover" @click="openModal(zone['analysed_image_url'])">
+                      {{ formatUrlImg(zone['analysed_image_url']) }}
                     </p>
                   </td>
                 </tr>
@@ -49,11 +49,12 @@
       </div>
         
         <!-- Modal zum Anzeigen des Bildes -->
-        <scale-modal >
-          <div style="display: flex; justify-content: center; align-items: center">
-            <img alt="image" />
-          </div>
-        </scale-modal>
+        <!-- Modal zum Anzeigen des Bildes -->
+    <scale-modal :opened="opened" size="large" @scale-close="opened = false">
+      <div style="display: flex; justify-content: center; align-items: center">
+        <img :src="modalImageUrl" alt="image" />
+      </div>
+    </scale-modal>
     </div>
   </body>
 </template>
@@ -64,6 +65,9 @@ import sidebar from '../../components/SideBar.vue'
 
 
 const projektInfo= ref<any>()
+// Zustand für das Modal
+const opened = ref(false)
+const modalImageUrl = ref('')
 
 function getProject(data:any){
   console.log(typeof(data))
@@ -75,20 +79,22 @@ function formatConfidence(value: number): string {
   return value.toFixed(2) + '%'
 }
 
-function formatUrlImg() {
-
+function formatUrlImg(url: string): string {
+  const formatedUrl= url.replace('images/analyse/', '')
+  return formatedUrl
 }
 
 // Modal öffnen und Bild-URL setzen
-function openModal() {
-
- return
+function openModal(imageUrl: string) {
+  const fullImageUrl = `http://localhost:8000/${imageUrl}`
+  modalImageUrl.value = fullImageUrl
+  opened.value = true
 
 }
 
 // Modal schließen
 function closeModal() {
-
+  opened.value = false
 }
 function getProgressBarClass(confidence: number) {
   if (confidence > 70) {
