@@ -5,7 +5,7 @@ import { initializeSocket } from '@/stores/socket';  // Importiere die initializ
 export const editorStore = defineStore('editor', () => {
     const companyName = ref<string>('');
     const projects = ref<string[]>([]);
-    const companyEditorEmail = ref<string>('');
+    const editorEmail = ref<string>('');
     const telekomEditorNotifications = ref<any[]>([]);  // Benachrichtigungen als Array von Objekten
 
     let socket: any = null;
@@ -42,7 +42,7 @@ export const editorStore = defineStore('editor', () => {
     return {
         companyName,
         projects,
-        companyEditorEmail,
+        editorEmail,
         telekomEditorNotifications,
         addNotification,
         initializeSocketListener,

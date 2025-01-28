@@ -101,14 +101,14 @@ async function submitForm() {
     }
 
     const data = await response.json();
-  console.log('data:', data);
+  //console.log('data:', data);
 
     tStore.tocken = data["access_token"];
     tStore.refreshToken = data["refresh_token"];
     if (data["projects"] && data["company_name"]) {
       editorstore.projects = data["projects"];
       editorstore.companyName = data["company_name"];
-      editorstore.companyEditorEmail = inputEmail.value;
+      editorstore.editorEmail = inputEmail.value;
     }
 
     if (loginUser.value.role === '2' &&data) {

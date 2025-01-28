@@ -1,6 +1,6 @@
 <template>
   <scale-card>
-      <scale-text-field label="Name" :value="ceditorstore.companyEditorEmail" readonly></scale-text-field>
+      <scale-text-field label="Name" :value="ceditorstore.editorEmail" readonly></scale-text-field>
       <scale-text-field label="Unternehmen" :value="ceditorstore.companyName" readonly></scale-text-field>
       <scale-dropdown-select label="Projects" @scale-change="handleSelectionChange" :invalid="warningEmpty"
       :helper-text="warningEmpty? 'Projekt auswählen' : ''">
@@ -35,7 +35,16 @@ async function getProjectContent() {
     warningEmpty.value = true
     return
   }
-  const url = `http://localhost:8000/api/v1/companyeditor/projectname/${selectedValue.value}`;
+  let url= ""
+
+  if(ceditorstore.companyName==="Telekom"){
+     url= `http://localhost:8000/api/v1/telekomeditor/projectname/${selectedValue.value}`
+  }
+  else{
+    url = `http://localhost:8000/api/v1/companyeditor/projectname/${selectedValue.value}`;
+
+  }
+ 
   
   const response = await fetch(url, {
     method: 'GET',
