@@ -6,7 +6,7 @@
     <scale-card label="">
       <scale-table
         show-sort
-        v-for="(notification, index) in editorstore.telekomEditorNotifications"
+        v-for="(notification, index) in telekomEditorNotifications"
         :key="index"
         class="notification-item"
       >
@@ -20,7 +20,7 @@
               <th tabindex="4" id="wahrscheinlichkeit">Wahrscheinlichkeit</th>
               <th tabindex="5" id="wahrscheinlichkeit">Bild</th>
               <th tabindex="6" id="zone_id">Zone Id</th>
-              <th tabindex="7" id="euros">Status</th>
+              <th tabindex="7" id="status">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -28,7 +28,7 @@
               <td>{{ notification.company_editor }}</td>
               <td>{{ notification.project_name }}</td>
               <td>{{ notification.city }}-{{ notification.street }}</td>
-              <td>{{ notification.objects.name }}</td>
+              <td>{{ notification.objects.object }}</td>
               <td>
                 <scale-progress-bar
                   :percentage="formatConfidence(notification.objects.confidence)"
@@ -38,12 +38,12 @@
               </td>
               <td>
                 <!-- Klickbar p-Tag zum Öffnen des Modals -->
-                <p style="cursor: pointer" @click="openModal(notification.analysed_image_url)">
-                  Bild anzeigen
+                <p class="ulrHover"  @click="openModal(notification.analysed_image_url)">
+                  {{ formatUrlImg(notification.analysed_image_url) }}
                 </p>
               </td>
-              <td>Zone ID</td>
-              <td><scale-button>Status</scale-button></td>
+              <td>{{ notification.zone_id }}</td>
+              <td><scale-button @click="establishObjectStatus(notification.objects.object, notification.latitude, notification.longitude)">bestädigen</scale-button></td>
             </tr>
           </tbody>
         </table>
@@ -61,9 +61,13 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { editorStore } from '@/stores/editorStore'
+import {tokenStore} from '@/stores/tockenStorage'
 import { initializeSocket } from '@/stores/socket'
+import { storeToRefs } from "pinia";
 
 const editorstore = editorStore()
+const tokenstore = tokenStore()
+const { telekomEditorNotifications } = storeToRefs(editorstore);
 
 // Zustand für das Modal
 const opened = ref(false)
@@ -74,6 +78,11 @@ function formatConfidence(value: number): string {
   return value.toFixed(2) + '%'
 }
 
+function formatUrlImg(url: string): string {
+  const formatedUrl= url.replace('images/analyse/', '')
+  return formatedUrl
+}
+
 // WebSocket-Listener initialisieren, wenn die Komponente gemountet wird
 let socket: any
 
@@ -81,7 +90,7 @@ onMounted(async () => {
   socket = await initializeSocket() // Socket initialisieren
   socket.on('notification', (data: any) => {
     console.log('Notification received:', data)
-    editorstore.addNotification(data) // Nachricht zur Benachrichtigungsliste hinzufügen
+    telekomEditorNotifications.value.push(data) // Nachricht zur Benachrichtigungsliste hinzufügen
   })
 })
 
@@ -105,6 +114,35 @@ function openModal(imageUrl: string) {
 function closeModal() {
   opened.value = false
 }
+
+function establishObjectStatus(obj:string , lat:string, long:string){
+  
+  const request= fetch('http://localhost:8000/api/v1/telekomeditor/update_status_img',{
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `${tokenstore.tocken}`
+    },
+    body: JSON.stringify({
+      status: true,
+      lat: parseFloat(lat),
+      long: parseFloat(long),
+      objectName: obj,
+    })
+  })
+
+
+
+  editorstore.telekomEditorNotifications.forEach((notification: any )=> {
+    if(notification.objects["object"] === obj && notification.latitude === lat && notification.longitude === long){
+      editorstore.telekomEditorNotifications = editorstore.telekomEditorNotifications.filter((item: any) => { return item !== notification})
+      
+    }
+  })
+
+  console.log(editorstore.telekomEditorNotifications)
+
+}
 </script>
 
 <style scoped>
@@ -122,5 +160,10 @@ function closeModal() {
 
 h2 {
   margin-bottom: 16px;
+}
+.ulrHover:hover{
+  color:#e20074;
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>
