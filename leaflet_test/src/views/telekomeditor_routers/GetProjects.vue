@@ -40,7 +40,7 @@
                     </td>
                     <!-- Render the image link only once for all objects in the zone -->
                     <template v-if="index === 0">
-                      <td :rowspan="zone['result_materiallist'].length" style="border-bottom-color: white; vertical-align: middle; text-align: center;">
+                      <td :rowspan="zone['result_materiallist'].length" style="border-bottom-color: #f9f9f9; vertical-align: middle; text-align: center;">
                         <p class="ulrHover" @click="openModal(zone['analysed_image_url'])" style="cursor:pointer;">
                           {{ formatUrlImg(zone['analysed_image_url']) }}
                         </p>
