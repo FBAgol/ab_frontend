@@ -19,12 +19,10 @@ import { ref, onMounted, watch, toRaw } from 'vue'
 import sidebar from '../../components/SideBar.vue'
 import 'leaflet/dist/leaflet.css'
 import * as L from 'leaflet'
-import { mainStore } from '@/stores/store'
 import { tokenStore } from '@/stores/tockenStorage'
 import type { updateImg  } from '@/interfaces/interface'
 
 
-const store = mainStore()
 const token = tokenStore()
 
 const initialMap = ref<L.Map | undefined>()
@@ -33,7 +31,6 @@ const openCamera = ref(false)
 const videoStream = ref<HTMLVideoElement | null>(null)
 const currentMarkerIndex = ref<string | null>(null)
 const isMobileDevice = ref(false)
-const d = ref<any>()
 
 const projectInfo = ref<any>()
 const updateImage= ref<updateImg>({
@@ -45,12 +42,7 @@ function getData(data: any) {
   projectInfo.value = data
 }
 
-watch(projectInfo, (newData) => {
-  const data = JSON.parse(JSON.stringify(newData))
-  //console.log('newData:', newData)
-  //console.log('streets:', newData["streets"])
-  d.value = newData['streets']
-})
+
 
 onMounted(() => {
   checkDeviceType()
@@ -75,12 +67,7 @@ const createMarkers = (data: { [key: string]: any }) => {
 
   data['streets'].forEach((street: { [key: string]: any }) => {
     street['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
-      if (s['original_image_url']) {
-        updateImage.value.oldAnalysedImgUrl = s['analysed_image_url']
-        updateImage.value.oldOrginalImgUrl = s['original_image_url']
-      }
       const zoneId = s['zone_id'] ? String(s['zone_id']) : 'Unbekannte Zone';
-      // console.log('type:', typeof parseFloat(s["longitude"]))
       const marker = L.marker([parseFloat(s['latitude']), parseFloat(s['longitude'])])
         .addTo(initialMap.value!)
         .bindPopup(getPopupContent(s['zone_id'], street['street_name'], s['target_material'], s["original_image_url"]), {
@@ -99,6 +86,10 @@ const createMarkers = (data: { [key: string]: any }) => {
             original_image_url: s['original_image_url'],
             analysed_image_url: s['analysed_image_url'],
           });
+          if (s['original_image_url']) {
+            updateImage.value.oldAnalysedImgUrl = s['analysed_image_url']
+            updateImage.value.oldOrginalImgUrl = s['original_image_url']
+          }
           setupPopupEvents(s['zone_id'], updateImage.value)})
       markers.value[s['zone_id']] = marker
     })
@@ -106,7 +97,6 @@ const createMarkers = (data: { [key: string]: any }) => {
 
   Object.values(markers.value).forEach((marker) => {
     const latLng = marker.getLatLng()
-    // console.log('Marker Koordinaten:', latLng);
   })
 
   if (Object.keys(markers.value).length > 0) {
@@ -212,20 +202,38 @@ const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
 
 const updateImgHandler = async (zoneId: string, imgInfo: updateImg) => {
   console.log('updateImgHandler:', zoneId, imgInfo);
-  document.querySelector('.avaolableImgBox')?.remove(); // Entfernt das alte Bild
+  //document.querySelector('.avaolableImgBox')?.remove(); // Entfernt das alte Bild
   
   // Lösche das Bild in der Datenbank
   await fetch('http://localhost:8000/api/v1/companyeditor/update/img_coordinate', {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token.tocken,
+      'Authorization': `${token.tocken}`,
     },
     body: JSON.stringify({
       oldOriginalImgUrl: imgInfo.oldOrginalImgUrl,
       oldAnalyzedImgUrl: imgInfo.oldAnalysedImgUrl,
     }),
   });
+
+  // Aktualisiere die projectInfo-Daten, um die Bild-URLs zu entfernen
+  const updatedProjectInfo = { ...projectInfo.value };
+  const updatedStreet = updatedProjectInfo['streets'].find((street: { [key: string]: any }) =>
+    street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId),
+  );
+
+  if (updatedStreet) {
+    updatedStreet['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
+      if (s['zone_id'] === zoneId) {
+        s['original_image_url'] = ''; // Setze die URL auf leer
+        s['analysed_image_url'] = ''; // Setze die URL auf leer
+      }
+    });
+  }
+
+  // Setze die aktualisierten projectInfo-Daten zurück
+  projectInfo.value = updatedProjectInfo;
 
   // Aktualisiere den Popup-Inhalt mit `getPopupContent`
   const marker = markers.value[zoneId];
@@ -390,6 +398,24 @@ async function saveImage(zoneId: string) {
 
     const result = await response.json();
 
+     // Aktualisiere die projectInfo-Daten mit den neuen Bild-URLs
+    const updatedProjectInfo = { ...projectInfo.value };
+    const updatedStreet = updatedProjectInfo['streets'].find((street: { [key: string]: any }) =>
+      street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId),
+    );
+
+    if (updatedStreet) {
+      updatedStreet['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
+        if (s['zone_id'] === zoneId) {
+          s['original_image_url'] = result.original_image_url;
+          s['analysed_image_url'] = result.analysed_image_url;
+        }
+      });
+    }
+
+    // Setze die aktualisierten projectInfo-Daten zurück
+    projectInfo.value = updatedProjectInfo;
+
     // Aktualisiere den Marker-Popup-Inhalt mit der Bild-URL und füge die Update-Schaltfläche hinzu
     updateMarkerPopupAfterSave(zoneId, result.analysed_image_url, result.original_image_url);
 
@@ -488,10 +514,29 @@ const updateMarkerPopup = (zoneId: string, image: string) => {
   setupPopupEvents(zoneId)
 }
 
+
+
 const removeImage = (zoneId: string) => {
   const marker = markers.value[zoneId]
 
   if (!marker) return
+
+    // Aktualisiere die projectInfo-Daten, um die Bild-URLs zu entfernen
+    const updatedProjectInfo = { ...projectInfo.value };
+  const updatedStreet = updatedProjectInfo['streets'].find((street: { [key: string]: any }) =>
+    street['coordinates_ZoneId'].some((s: { [key: string]: any }) => s['zone_id'] === zoneId),
+  );
+
+  if (updatedStreet) {
+    updatedStreet['coordinates_ZoneId'].forEach((s: { [key: string]: any }) => {
+      if (s['zone_id'] === zoneId) {
+        s['original_image_url'] = ''; // Setze die URL auf leer
+        s['analysed_image_url'] = ''; // Setze die URL auf leer
+      }
+    });
+  }
+    // Setze die aktualisierten projectInfo-Daten zurück
+  projectInfo.value = updatedProjectInfo;
 
   // Hole den aktuellen Popup-Inhalt
   const popupContent = marker.getPopup()?.getContent()

@@ -10,7 +10,7 @@
         :key="index"
         class="notification-item"
       >
-        <table>
+        <table style="border-bottom-color: white;">
           <thead>
             <tr>
               <th tabindex="0" aria-sort="descending" id="email">Email</th>
@@ -43,7 +43,8 @@
                 </p>
               </td>
               <td>{{ notification.zone_id }}</td>
-              <td><scale-button @click="establishObjectStatus(notification.objects.object, notification.latitude, notification.longitude)">bestädigen</scale-button></td>
+              <td>
+                <scale-button @click="establishObjectStatus(notification.objects.object, notification.latitude, notification.longitude)">bestädigen</scale-button></td>
             </tr>
           </tbody>
         </table>
@@ -143,6 +144,44 @@ function establishObjectStatus(obj:string , lat:string, long:string){
   console.log(editorstore.telekomEditorNotifications)
 
 }
+
+
+/*
+
+Email Reuqest
+
+async function sendEmail() {
+  const fromEmail = "farzad.golzari@telekom.de";
+  const toEmail="farzadgolzari@gmail.com"  // E-Mail des Empfängers
+  const subject = `Notification for jjdh`;  // Betreff der E-Mail
+  const body = `Hello, you have a new notification regarding the project.`;  // Text der E-Mail
+
+  try {
+    const response = await fetch('http://localhost:8000/api/v1/email/send_email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `${tokenstore.tocken}`,
+      },
+      body: JSON.stringify({
+        from_email: fromEmail,
+        to_email: toEmail,
+        subject: subject,
+        body: body,
+      }),
+    });
+
+    if (response.ok) {
+      alert('E-Mail erfolgreich gesendet');
+    } else {
+      alert('Fehler beim Senden der E-Mail');
+    }
+  } catch (error) {
+    console.error('Error sending email:', error);
+    alert('Fehler beim Senden der E-Mail');
+  }
+}
+*/ 
 </script>
 
 <style scoped>
@@ -165,5 +204,13 @@ h2 {
   color:#e20074;
   text-decoration: underline;
   cursor: pointer;
+}
+scale-card::part(base) {
+  border-radius: 5px;
+}
+.table tbody td{
+  border-bottom-color: white;
+  vertical-align: middle;
+  text-align: center;
 }
 </style>
