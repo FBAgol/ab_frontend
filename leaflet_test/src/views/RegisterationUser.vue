@@ -24,8 +24,10 @@
 
 import { ref} from 'vue'
 import { tokenStore } from '@/stores/tockenStorage'
+import { editorStore } from '@/stores/editorStore'
 
 const store = tokenStore()
+const editorstore = editorStore()
 const emits= defineEmits(["registerNumber"])
 
 
@@ -107,11 +109,20 @@ async function submitForm() {
     else if (parseInt(selectedValue.value) === 2) registerNumberType = 2;
 
     const data = await request.json();
-    console.log(data);
+    console.log("regiseration data", data);
 
     if (parseInt(selectedValue.value) !== 0) {
       store.tocken = data["access_token"];
       store.refreshToken = data["refresh_token"];
+      if (data["projects"] && data["company_name"]) {
+      editorstore.projects = data["projects"];
+      editorstore.companyName = data["company_name"];
+      editorstore.editorEmail = inputEmail.value;
+    }
+
+    if (parseInt(selectedValue.value) === 2 &&data) {
+      editorstore.telekomEditorNotifications = data["notifications"];
+    } 
     }
 
     return emits("registerNumber", registerNumberType);
