@@ -418,6 +418,7 @@ async function saveImage(zoneId: string) {
         if (s['zone_id'] === zoneId) {
           s['original_image_url'] = result.original_image_url;
           s['analysed_image_url'] = result.analysed_image_url;
+          s["target_material"] = result.target_material
         }
       });
     }
