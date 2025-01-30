@@ -11,6 +11,13 @@
         <button @click="closeCamera">Abbrechen</button>
       </div>
     </div>
+     <!-- Modal zum Anzeigen des Bildes -->
+     <scale-modal :opened="opened" size="large" @scale-close="opened = false" class="scale-modal" >
+      <div style="display: flex; justify-content: center; align-items: center">
+        <img :src="modalImageUrl" alt="image" />
+      </div>
+    </scale-modal>
+    
   </body>
 </template>
 
@@ -31,6 +38,8 @@ const openCamera = ref(false)
 const videoStream = ref<HTMLVideoElement | null>(null)
 const currentMarkerIndex = ref<string | null>(null)
 const isMobileDevice = ref(false)
+const opened = ref(false)
+const modalImageUrl = ref('')
 
 const projectInfo = ref<any>()
 const updateImage= ref<updateImg>({
@@ -79,13 +88,6 @@ const createMarkers = (data: { [key: string]: any }) => {
           offset: [0, -10], // Offset für die Position des Tooltips
         })
         .on('popupopen', () => {// Gib die gespeicherten Informationen des Markers in der Konsole aus
-          console.log('Gespeicherte Informationen:', {
-            zoneId: zoneId,
-            street: street['street_name'],
-            target_material: s['target_material'],
-            original_image_url: s['original_image_url'],
-            analysed_image_url: s['analysed_image_url'],
-          });
           if (s['original_image_url']) {
             updateImage.value.oldAnalysedImgUrl = s['analysed_image_url']
             updateImage.value.oldOrginalImgUrl = s['original_image_url']
@@ -159,7 +161,14 @@ const setupPopupEvents = (zoneId: string, imgInfo?: updateImg) => {
   const deleteButton = document.getElementById(`delete${zoneId}Photo`)
   const saveImgButton = document.getElementById(`save${zoneId}`)
   const updateImgButton = document.getElementById(`updateImg${zoneId}`)
+  const availableImg = document.getElementById(`availableImg${zoneId}`)
   
+  if(availableImg){
+    availableImg.addEventListener('click', (event)=>{
+      event.stopPropagation()
+      openModal(zoneId)
+    })
+  }
 
   // Event-Listener für Upload-Button (nur Datei-Upload öffnen)
   if (pcCameraIcon) {
@@ -426,6 +435,14 @@ async function saveImage(zoneId: string) {
   }
 }
 
+// Modal öffnen und Bild-URL setzen
+function openModal(zoneId: string) {
+  const img = document.getElementById(`availableImg${zoneId}`) as HTMLImageElement
+  const fullImageUrl = img.src
+  modalImageUrl.value = fullImageUrl
+  opened.value = true
+
+}
 
 function hideScaleButtonBase(scaleButtonId: string) {
   // Suche das Scale-Button-Element anhand der ID
@@ -644,5 +661,9 @@ const closeCamera = () => {
 
 .no-scroll {
   overflow: hidden;
+}
+/* Zusätzlicher Stil für den scale-modal */
+.scale-modal {
+  z-index: 1000; /* Höher als der z-index der Karte */
 }
 </style>
