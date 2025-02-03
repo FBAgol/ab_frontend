@@ -45,5 +45,29 @@ const router = createRouter({
   ],
 })
 
+/**/
+
+// Navigation Guard --> if the authToken is not there, then has to be shown the register page
+router.beforeEach(async (to, from, next) => {
+  const store = tokenStore()
+  const authToken = store.tocken || localStorage.getItem('authToken')
+
+  if (!authToken) {
+    if (to.path !== '/') {
+      return next('/') 
+    }
+    next() 
+  } else {
+ 
+    const isAuthenticated = !!authToken
+
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      return next('/') 
+    } else {
+      next() 
+    }
+  }
+})
+
 
 export default router

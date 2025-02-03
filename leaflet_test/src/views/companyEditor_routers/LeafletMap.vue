@@ -4,7 +4,7 @@
       <sidebar @projectData="getData($event)"></sidebar>
     </div>
     <div style="width: 75%; border-radius: 5px">
-      <div id="map" style="height: 90vh; margin-top: 10px"></div>
+      <div id="map" style="height: 90vh; margin-top: 10px; z-index: 1;"></div>
       <div v-if="openCamera" class="camera-modal">
         <video ref="videoStream" autoplay></video>
         <button @click="takePhoto">Foto aufnehmen</button>
