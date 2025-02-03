@@ -45,6 +45,8 @@ const telekomeditorShow = ref<boolean>(false)
 const notifications = ref<any[]>([]);
 // Zugriff auf den Router um die Daten auszulesen
 const router = useRouter()
+//console.log(router.getRoutes())
+//console.log(router.getRoutes().map(route => route.path))
 
 
 function userType(value: number, data?: any) {
